@@ -1,0 +1,21 @@
+[package]
+name = "rusty-bird"
+version = "0.1.0"
+edition = "2024"
+
+
+[dependencies]
+bevy = { version = "0.17.2" }
+csgrs = { git = "https://github.com/sambskn/csgrs.git", branch="bump-geo", features=["bevymesh"] }
+geo = "0.31"
+geo-types = "0.7.17"
+
+[profile.release]
+# make small
+opt-level = "z"
+# Compile the entire crate as one unit.
+# Slows compile times, marginal improvements.
+codegen-units = 1
+# Do a second optimization pass over the entire program, including dependencies.
+# Slows compile times, marginal improvements.
+lto = "thin"
