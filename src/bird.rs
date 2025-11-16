@@ -58,6 +58,88 @@ pub struct BirdGenInputs {
     pub base_flat: f32, // [-100:100]
 }
 
+pub enum BirdGenInputTypes {
+    BeakLength,
+    BeakSize,
+    BeakWidth,
+    BeakRoundness,
+    HeadSize,
+    HeadToBelly,
+    EyeSize,
+    HeadLateralOffset,
+    HeadLevel,
+    HeadYaw,
+    HeadPitch,
+    BellyLength,
+    BellySize,
+    BellyFat,
+    BellyToBottom,
+    BottomSize,
+    TailLength,
+    TailWidth,
+    TailYaw,
+    TailPitch,
+    TailRoundness,
+    BaseFlat,
+}
+
+pub fn get_input_type_string(input_type: &BirdGenInputTypes) -> &str {
+    match input_type {
+        BirdGenInputTypes::BeakLength => "Beak Length",
+        BirdGenInputTypes::BeakSize => "Beak Size",
+        BirdGenInputTypes::BeakWidth => "Beak Width",
+        BirdGenInputTypes::BeakRoundness => "Beak Roundness",
+        BirdGenInputTypes::HeadSize => "Head Size",
+        BirdGenInputTypes::HeadToBelly => "Head to Belly",
+        BirdGenInputTypes::EyeSize => "Eye Size",
+        BirdGenInputTypes::HeadLateralOffset => "Head Lateral Offset",
+        BirdGenInputTypes::HeadLevel => "Head Level",
+        BirdGenInputTypes::HeadYaw => "Head Yaw",
+        BirdGenInputTypes::HeadPitch => "Head Pitch",
+        BirdGenInputTypes::BellyLength => "Belly Length",
+        BirdGenInputTypes::BellySize => "Belly Size",
+        BirdGenInputTypes::BellyFat => "Belly Fat",
+        BirdGenInputTypes::BellyToBottom => "Belly to Bottom",
+        BirdGenInputTypes::BottomSize => "Bottom Size",
+        BirdGenInputTypes::TailLength => "Tail Length",
+        BirdGenInputTypes::TailWidth => "Tail Width",
+        BirdGenInputTypes::TailYaw => "Tail Yaw",
+        BirdGenInputTypes::TailPitch => "Tail Pitch",
+        BirdGenInputTypes::TailRoundness => "Tail Roundness",
+        BirdGenInputTypes::BaseFlat => "Base Flat",
+    }
+}
+
+pub fn get_input_value_for_type(
+    input_type: &BirdGenInputTypes,
+    input_values: &BirdGenInputs,
+) -> f32 {
+    match input_type {
+        BirdGenInputTypes::BeakLength => input_values.beak_length,
+        BirdGenInputTypes::BeakSize => input_values.beak_size,
+        BirdGenInputTypes::BeakWidth => input_values.beak_width,
+        BirdGenInputTypes::BeakRoundness => input_values.beak_roundness,
+        BirdGenInputTypes::HeadSize => input_values.head_size,
+        BirdGenInputTypes::HeadToBelly => input_values.head_to_belly,
+        BirdGenInputTypes::EyeSize => input_values.eye_size,
+        BirdGenInputTypes::HeadLateralOffset => input_values.head_lateral_offset,
+        BirdGenInputTypes::HeadLevel => input_values.head_level,
+        BirdGenInputTypes::HeadYaw => input_values.head_yaw,
+        BirdGenInputTypes::HeadPitch => input_values.head_pitch,
+        BirdGenInputTypes::BellyLength => input_values.belly_length,
+        BirdGenInputTypes::BellySize => input_values.belly_size,
+        BirdGenInputTypes::BellyFat => input_values.belly_fat,
+        BirdGenInputTypes::BellyToBottom => input_values.belly_to_bottom,
+        BirdGenInputTypes::BottomSize => input_values.bottom_size,
+        BirdGenInputTypes::TailLength => input_values.tail_length,
+        BirdGenInputTypes::TailWidth => input_values.tail_width,
+        BirdGenInputTypes::TailYaw => input_values.tail_yaw,
+        BirdGenInputTypes::TailPitch => input_values.tail_pitch,
+        BirdGenInputTypes::TailRoundness => input_values.tail_roundness,
+        BirdGenInputTypes::BaseFlat => input_values.base_flat,
+    }
+}
+
 impl Default for BirdGenInputs {
     fn default() -> Self {
         BirdGenInputs {
