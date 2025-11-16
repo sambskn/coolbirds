@@ -1026,15 +1026,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7ef8e4b7e61dfe7719bb03c884dc270cd46a82efb40f93e9933b990c5c190c59"
 
 [[package]]
-name = "bevy_panorbit_camera"
-version = "0.33.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "096f90f6da63218827d94f13a65c5e3db7ad612ce56043fdbaba03923724e060"
-dependencies = [
- "bevy",
-]
-
-[[package]]
 name = "bevy_pbr"
 version = "0.17.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4871,7 +4862,6 @@ version = "0.1.0"
 dependencies = [
  "accesskit",
  "bevy",
- "bevy_panorbit_camera",
  "csgrs",
  "geo",
  "geo-types",

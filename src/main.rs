@@ -19,7 +19,6 @@ use bevy::{
         TrackClick, UiWidgetsPlugins, ValueChange, observe,
     },
 };
-use bevy_panorbit_camera::{PanOrbitCamera, PanOrbitCameraPlugin};
 
 mod bird;
 
@@ -66,7 +65,6 @@ fn main() {
         .add_plugins(UiWidgetsPlugins)
         .add_plugins(InputDispatchPlugin)
         .add_plugins(TabNavigationPlugin)
-        .add_plugins(PanOrbitCameraPlugin)
         .add_message::<RebuildBird>()
         .insert_state(BirdState::BirdVisible)
         .insert_resource(ClearColor(BG_COLOR))
@@ -196,7 +194,10 @@ fn ui_root(asset_server: &AssetServer) -> impl Bundle {
             overflow: Overflow::scroll_y(),
             ..default()
         },
-        Pickable {should_block_lower: true, is_hoverable: true},
+        Pickable {
+            should_block_lower: true,
+            is_hoverable: true,
+        },
         BackgroundColor(Color::srgba(0.1, 0.1, 0.1, 0.95)),
         TabGroup::default(),
         UiRoot,
@@ -776,7 +777,7 @@ fn spawn_bird_mesh(
 
 fn spawn_camera_and_light(mut commands: Commands) {
     commands.spawn((
-        PanOrbitCamera::default(),
+        Camera3d::default(),
         Transform::from_xyz(65.0, 40.0, 65.0).with_rotation(Quat::from_xyzw(
             -0.07382465,
             0.46779895,
