@@ -17,6 +17,7 @@ fn main() {
                 ..default()
             }),
         )
+        .insert_resource(ClearColor(Color::srgb(0.35, 0.69, 0.36)))
         .add_systems(Startup, (spawn_camera_and_light, spawn_debug_mesh))
         .add_systems(Update, camera_update)
         .run();
@@ -48,11 +49,11 @@ fn spawn_camera_and_light(mut commands: Commands) {
     // spawn camera
     commands.spawn((
         Camera3d { ..default() },
-        Transform::from_xyz(40.0, 30.0, 10.0).with_rotation(quat(
-            -0.23287567,
-            0.58461344,
-            0.18007833,
-            0.7560157,
+        Transform::from_xyz(65.0, 40.0, 65.0).with_rotation(quat(
+            -0.07382465,
+            0.46779895,
+            0.039250545,
+            0.8798623,
         )),
     ));
 
