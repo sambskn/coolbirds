@@ -6,6 +6,7 @@ edition = "2024"
 
 [dependencies]
 bevy = { version = "0.17.2" }
+bevy_egui = "0.38.0"
 csgrs = { git = "https://github.com/sambskn/csgrs.git", branch="bump-geo", features=["bevymesh"] }
 geo = "0.31"
 geo-types = "0.7.17"

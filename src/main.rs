@@ -1,6 +1,6 @@
-use bevy::prelude::*;
-
 use crate::bird::{BirdGenInputs, generate_bird_body_mesh, generate_bird_head_mesh};
+use bevy::prelude::*;
+use bevy_egui::{EguiContexts, EguiPlugin, EguiPrimaryContextPass, egui};
 
 mod bird;
 
@@ -17,10 +17,20 @@ fn main() {
                 ..default()
             }),
         )
+        .add_plugins(EguiPlugin::default())
         .insert_resource(ClearColor(Color::srgb(0.35, 0.69, 0.36)))
         .add_systems(Startup, (spawn_camera_and_light, spawn_debug_mesh))
         .add_systems(Update, camera_update)
+        .add_systems(EguiPrimaryContextPass, ui_example_system)
         .run();
+}
+
+fn ui_example_system(mut contexts: EguiContexts) -> Result {
+    egui::Window::new("birdgen").show(contexts.ctx_mut()?, |ui| {
+        ui.label("~~settings here soon~~");
+        ui.label("ported/inspired by bird-o-matic by mooncactus")
+    });
+    Ok(())
 }
 
 fn spawn_debug_mesh(
