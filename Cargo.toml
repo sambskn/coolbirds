@@ -5,6 +5,7 @@ edition = "2024"
 
 
 [dependencies]
+accesskit = "0.21.1"
 bevy = { version = "0.17.2", features= ["experimental_bevy_ui_widgets"]}
 bevy_panorbit_camera = { version ="0.33.0"}
 csgrs = { git = "https://github.com/sambskn/csgrs.git", branch="bump-geo", features=["bevymesh"] }
