@@ -10,7 +10,7 @@ use bevy::{
 mod bird;
 mod ui;
 
-const BG_COLOR: Color = Color::srgb(0.47, 0.69, 0.48);
+const BG_COLOR: Color = Color::srgb(0.47, 0.49, 0.68);
 
 #[derive(Message, Debug)]
 struct RebuildBird;
