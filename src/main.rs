@@ -217,10 +217,6 @@ fn zoom_system(
             let new_distance =
                 (current_distance - zoom_delta).clamp(ZOOM_MIN_DISTANCE, ZOOM_MAX_DISTANCE);
             tf.translation = origin + direction * new_distance;
-            info!(
-                "Zoom: delta={}, old_dist={}, new_dist={}",
-                zoom_delta, current_distance, new_distance
-            );
         }
     }
 }
