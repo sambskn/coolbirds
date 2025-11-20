@@ -3,7 +3,7 @@ use crate::{
     ui::BirdUIPlugin,
 };
 use bevy::{
-    input::{mouse::MouseWheel, touch::Touch},
+    input::{ButtonInput, mouse::MouseMotion, mouse::MouseWheel, touch::Touch},
     input_focus::{InputDispatchPlugin, tab_navigation::TabNavigationPlugin},
     prelude::*,
 };
@@ -43,7 +43,15 @@ fn main() {
         .insert_resource(BirdGenInputs::default())
         .add_plugins(BirdUIPlugin)
         .add_systems(Startup, (spawn_camera_and_light, kick_off_bird_load))
-        .add_systems(Update, (handle_bird_rebuild, touch_system, zoom_system))
+        .add_systems(
+            Update,
+            (
+                handle_bird_rebuild,
+                touch_system,
+                mouse_drag_system,
+                zoom_system,
+            ),
+        )
         .add_systems(OnEnter(BirdState::Loading), spawn_bird_mesh)
         .run();
 }
@@ -98,14 +106,13 @@ fn spawn_bird_mesh(
 }
 
 fn spawn_camera_and_light(mut commands: Commands) {
+    // Position camera to look at origin
+    let camera_pos = Vec3::new(65.0, 40.0, 65.0);
+    let look_at = Vec3::ZERO;
+
     commands.spawn((
         Camera3d::default(),
-        Transform::from_xyz(65.0, 40.0, 65.0).with_rotation(Quat::from_xyzw(
-            -0.07382465,
-            0.46779895,
-            0.039250545,
-            0.8798623,
-        )),
+        Transform::from_translation(camera_pos).looking_at(look_at, Vec3::Y),
     ));
 
     commands.spawn((
@@ -133,41 +140,72 @@ fn touch_system(
     }
 
     if rotate_intent.length() > 0.05 {
-        for mut tf in cam_query.iter_mut() {
-            let origin = Vec3::ZERO;
+        apply_rotation(
+            &mut cam_query,
+            rotate_intent,
+            TOUCH_ADJUST_SPEED * time.delta_secs(),
+        );
+    }
+}
 
-            // X swipe = orbit around Y axis (yaw)
-            let yaw_delta =
-                rotate_intent.x * std::f32::consts::PI * TOUCH_ADJUST_SPEED * time.delta_secs();
+const MOUSE_ADJUST_SPEED: f32 = 0.002;
 
-            // Rotate position around the Y axis
-            let rotation = Quat::from_rotation_y(yaw_delta);
-            let offset = tf.translation - origin;
-            tf.translation = origin + rotation * offset;
+fn mouse_drag_system(
+    mouse_button: Res<ButtonInput<MouseButton>>,
+    mut mouse_motion: MessageReader<MouseMotion>,
+    mut cam_query: Query<&mut Transform, With<Camera3d>>,
+) {
+    // Only rotate when left mouse button is held
+    if !mouse_button.pressed(MouseButton::Left) {
+        return;
+    }
 
-            // Rotate the camera to keep looking at origin
-            tf.look_at(origin, Vec3::Y);
+    let mut rotate_intent = Vec2::ZERO;
+    for motion in mouse_motion.read() {
+        rotate_intent += motion.delta;
+    }
 
-            // Y swipe = adjust pitch (tilt up/down)
-            let pitch_delta =
-                -rotate_intent.y * std::f32::consts::PI * TOUCH_ADJUST_SPEED * time.delta_secs();
+    if rotate_intent.length() > 0.05 {
+        apply_rotation(&mut cam_query, rotate_intent, MOUSE_ADJUST_SPEED);
+    }
+}
 
-            // Calculate current pitch and clamp it
-            let forward = (origin - tf.translation).normalize();
-            let current_pitch = forward.y.asin();
-            let new_pitch = (current_pitch + pitch_delta).clamp(
-                -std::f32::consts::FRAC_PI_2 * 0.95,
-                std::f32::consts::FRAC_PI_2 * 0.95,
-            );
-            let actual_pitch_delta = new_pitch - current_pitch;
+fn apply_rotation(
+    cam_query: &mut Query<&mut Transform, With<Camera3d>>,
+    rotate_intent: Vec2,
+    speed_multiplier: f32,
+) {
+    for mut tf in cam_query.iter_mut() {
+        let origin = Vec3::ZERO;
 
-            // Rotate around the right axis for pitch
-            let right = tf.right();
-            let pitch_rotation = Quat::from_axis_angle(*right, actual_pitch_delta);
-            let offset = tf.translation - origin;
-            tf.translation = origin + pitch_rotation * offset;
-            tf.look_at(origin, Vec3::Y);
-        }
+        // X motion = orbit around Y axis (yaw)
+        let yaw_delta = rotate_intent.x * std::f32::consts::PI * speed_multiplier;
+
+        // Rotate position around the Y axis
+        let rotation = Quat::from_rotation_y(yaw_delta);
+        let offset = tf.translation - origin;
+        tf.translation = origin + rotation * offset;
+
+        // Y motion = adjust pitch (tilt up/down)
+        let pitch_delta = -rotate_intent.y * std::f32::consts::PI * speed_multiplier;
+
+        // Calculate current pitch and clamp it
+        let forward = (origin - tf.translation).normalize();
+        let current_pitch = forward.y.asin();
+        let new_pitch = (current_pitch + pitch_delta).clamp(
+            -std::f32::consts::FRAC_PI_2 * 0.95,
+            std::f32::consts::FRAC_PI_2 * 0.95,
+        );
+        let actual_pitch_delta = new_pitch - current_pitch;
+
+        // Rotate around the right axis for pitch
+        let right = tf.right();
+        let pitch_rotation = Quat::from_axis_angle(*right, actual_pitch_delta);
+        let offset = tf.translation - origin;
+        tf.translation = origin + pitch_rotation * offset;
+
+        // Apply rotation to keep looking at origin
+        tf.look_at(origin, Vec3::Y);
     }
 }
 
