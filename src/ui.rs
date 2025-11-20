@@ -142,15 +142,15 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         Node {
             position_type: PositionType::Absolute,
-            top: px(16),
-            left: px(16),
+            top: px(24),
+            left: px(24),
             ..default()
         },
         children![
             Text::new("bird-o-matic"),
             TextFont {
                 font: asset_server.load("fonts/OTBrut-Regular.ttf"),
-                font_size: 34.0,
+                font_size: 48.0,
                 ..default()
             },
             TextColor(TEXT_COLOR),
@@ -166,7 +166,8 @@ fn ui_root(asset_server: &AssetServer) -> impl Bundle {
             left: px(24),
             right: px(24),
             min_width: vw(33),
-            max_height: vh(20),
+            max_width: vw(75),
+            max_height: vh(30),
             flex_direction: FlexDirection::Column,
             padding: UiRect::axes(px(30.), px(20)),
             overflow: Overflow::scroll_y(),
@@ -385,7 +386,7 @@ fn section_header(asset_server: &AssetServer, title: &str) -> impl Bundle {
         Text::new(title),
         TextFont {
             font: asset_server.load("fonts/OTBrut-Regular.ttf"),
-            font_size: 20.0,
+            font_size: 24.0,
             ..default()
         },
         TextColor(TEXT_COLOR),
@@ -435,7 +436,7 @@ where
                 Text::new(get_input_type_string(&input_type)),
                 TextFont {
                     font: asset_server.load("fonts/OTBrut-Regular.ttf"),
-                    font_size: 14.0,
+                    font_size: 16.0,
                     ..default()
                 },
                 TextColor(TEXT_COLOR),
@@ -518,11 +519,11 @@ fn regenerate_button(asset_server: &AssetServer) -> impl Bundle {
     (
         Node {
             width: Val::Percent(100.),
-            height: px(40.),
+            min_height: px(40.),
             justify_content: JustifyContent::Center,
             align_items: AlignItems::Center,
             margin: UiRect::vertical(px(5.)),
-            padding: UiRect::vertical(px(5.)),
+            padding: UiRect::axes(px(8.), px(16)),
             border: UiRect::all(px(2.)),
             ..default()
         },
@@ -536,7 +537,7 @@ fn regenerate_button(asset_server: &AssetServer) -> impl Bundle {
             Text::new("Regenerate Bird"),
             TextFont {
                 font: asset_server.load("fonts/OTBrut-Regular.ttf"),
-                font_size: 18.0,
+                font_size: 20.0,
                 ..default()
             },
             TextColor(TEXT_COLOR),
