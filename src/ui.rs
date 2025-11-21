@@ -146,15 +146,15 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
             left: px(24),
             ..default()
         },
-        children![
+        children![(
             Text::new("bird-o-matic"),
             TextFont {
-                font: asset_server.load("fonts/OTBrut-Regular.ttf"),
+                font: asset_server.load("fonts/PPMonumentCondensed-BoldItalic.ttf"),
                 font_size: 48.0,
                 ..default()
             },
             TextColor(TEXT_COLOR),
-        ],
+        )],
     ));
 }
 
@@ -168,9 +168,8 @@ fn ui_root(asset_server: &AssetServer) -> impl Bundle {
             min_width: vw(33),
             max_width: vw(75),
             max_height: vh(30),
-            flex_direction: FlexDirection::Column,
+            flex_direction: FlexDirection::Row,
             padding: UiRect::axes(px(30.), px(20)),
-            overflow: Overflow::scroll_y(),
             ..default()
         },
         Pickable {
@@ -181,202 +180,223 @@ fn ui_root(asset_server: &AssetServer) -> impl Bundle {
         TabGroup::default(),
         UiRoot,
         children![
-            // Beak Section
-            section_header(asset_server, "Beak"),
-            slider(
-                asset_server,
-                |inputs, v| inputs.beak_length = v,
-                BirdGenInputTypes::BeakLength,
-                0.0,
-                50.0,
-                25.0
-            ),
-            slider(
-                asset_server,
-                |inputs, v| inputs.beak_size = v,
-                BirdGenInputTypes::BeakSize,
-                20.0,
-                100.0,
-                60.0
-            ),
-            slider(
-                asset_server,
-                |inputs, v| inputs.beak_width = v,
-                BirdGenInputTypes::BeakWidth,
-                0.0,
-                25.0,
-                12.5
-            ),
-            slider(
-                asset_server,
-                |inputs, v| inputs.beak_roundness = v,
-                BirdGenInputTypes::BeakRoundness,
-                10.0,
-                200.0,
-                105.0
-            ),
-            separator(),
-            // Head Section
-            section_header(asset_server, "Head"),
-            slider(
-                asset_server,
-                |inputs, v| inputs.head_size = v,
-                BirdGenInputTypes::HeadSize,
-                10.0,
-                40.0,
-                25.0
-            ),
-            slider(
-                asset_server,
-                |inputs, v| inputs.head_to_belly = v,
-                BirdGenInputTypes::HeadToBelly,
-                -20.0,
-                50.0,
-                15.0
-            ),
-            slider(
-                asset_server,
-                |inputs, v| inputs.eye_size = v,
-                BirdGenInputTypes::EyeSize,
-                0.0,
-                20.0,
-                10.0
-            ),
-            slider(
-                asset_server,
-                |inputs, v| inputs.head_lateral_offset = v,
-                BirdGenInputTypes::HeadLateralOffset,
-                -15.0,
-                15.0,
-                0.0
-            ),
-            slider(
-                asset_server,
-                |inputs, v| inputs.head_level = v,
-                BirdGenInputTypes::HeadLevel,
-                0.0,
-                80.0,
-                40.0
-            ),
-            slider(
-                asset_server,
-                |inputs, v| inputs.head_yaw = v,
-                BirdGenInputTypes::HeadYaw,
-                -45.0,
-                45.0,
-                0.0
-            ),
-            slider(
-                asset_server,
-                |inputs, v| inputs.head_pitch = v,
-                BirdGenInputTypes::HeadPitch,
-                -80.0,
-                45.0,
-                -17.5
-            ),
-            separator(),
-            // Body Section
-            section_header(asset_server, "Body"),
-            slider(
-                asset_server,
-                |inputs, v| inputs.belly_length = v,
-                BirdGenInputTypes::BellyLength,
-                10.0,
-                100.0,
-                55.0
-            ),
-            slider(
-                asset_server,
-                |inputs, v| inputs.belly_size = v,
-                BirdGenInputTypes::BellySize,
-                20.0,
-                60.0,
-                40.0
-            ),
-            slider(
-                asset_server,
-                |inputs, v| inputs.belly_fat = v,
-                BirdGenInputTypes::BellyFat,
-                50.0,
-                150.0,
-                100.0
-            ),
-            slider(
-                asset_server,
-                |inputs, v| inputs.belly_to_bottom = v,
-                BirdGenInputTypes::BellyToBottom,
-                1.0,
-                50.0,
-                25.5
-            ),
-            slider(
-                asset_server,
-                |inputs, v| inputs.bottom_size = v,
-                BirdGenInputTypes::BottomSize,
-                5.0,
-                50.0,
-                27.5
-            ),
-            separator(),
-            // Tail Section
-            section_header(asset_server, "Tail"),
-            slider(
-                asset_server,
-                |inputs, v| inputs.tail_length = v,
-                BirdGenInputTypes::TailLength,
-                0.0,
-                100.0,
-                50.0
-            ),
-            slider(
-                asset_server,
-                |inputs, v| inputs.tail_width = v,
-                BirdGenInputTypes::TailWidth,
-                1.0,
-                50.0,
-                25.5
-            ),
-            slider(
-                asset_server,
-                |inputs, v| inputs.tail_yaw = v,
-                BirdGenInputTypes::TailYaw,
-                -45.0,
-                45.0,
-                0.0
-            ),
-            slider(
-                asset_server,
-                |inputs, v| inputs.tail_pitch = v,
-                BirdGenInputTypes::TailPitch,
-                -45.0,
-                90.0,
-                22.5
-            ),
-            slider(
-                asset_server,
-                |inputs, v| inputs.tail_roundness = v,
-                BirdGenInputTypes::TailRoundness,
-                10.0,
-                200.0,
-                105.0
-            ),
-            separator(),
-            // Regenerate Button
             (
-                regenerate_button(asset_server),
-                observe(
-                    |_activate: On<Activate>,
-                     mut rebuild_writer: MessageWriter<RebuildBird>,
-                     bird_state: Res<State<BirdState>>| {
-                        if *bird_state.get() == BirdState::BirdVisible {
-                            rebuild_writer.write(RebuildBird);
-                        }
-                    }
-                ),
+                Node {
+                    overflow: Overflow::scroll_y(),
+                    flex_direction: FlexDirection::Column,
+                    padding: UiRect::axes(px(4), px(2)),
+                    min_width: percent(80),
+                    ..default()
+                },
+                children![
+                    // Beak Section
+                    section_header(asset_server, "Beak"),
+                    slider(
+                        asset_server,
+                        |inputs, v| inputs.beak_length = v,
+                        BirdGenInputTypes::BeakLength,
+                        0.0,
+                        50.0,
+                        25.0
+                    ),
+                    slider(
+                        asset_server,
+                        |inputs, v| inputs.beak_size = v,
+                        BirdGenInputTypes::BeakSize,
+                        20.0,
+                        100.0,
+                        60.0
+                    ),
+                    slider(
+                        asset_server,
+                        |inputs, v| inputs.beak_width = v,
+                        BirdGenInputTypes::BeakWidth,
+                        0.0,
+                        25.0,
+                        12.5
+                    ),
+                    slider(
+                        asset_server,
+                        |inputs, v| inputs.beak_roundness = v,
+                        BirdGenInputTypes::BeakRoundness,
+                        10.0,
+                        200.0,
+                        105.0
+                    ),
+                    separator(),
+                    // Head Section
+                    section_header(asset_server, "Head"),
+                    slider(
+                        asset_server,
+                        |inputs, v| inputs.head_size = v,
+                        BirdGenInputTypes::HeadSize,
+                        10.0,
+                        40.0,
+                        25.0
+                    ),
+                    slider(
+                        asset_server,
+                        |inputs, v| inputs.head_to_belly = v,
+                        BirdGenInputTypes::HeadToBelly,
+                        -20.0,
+                        50.0,
+                        15.0
+                    ),
+                    slider(
+                        asset_server,
+                        |inputs, v| inputs.eye_size = v,
+                        BirdGenInputTypes::EyeSize,
+                        0.0,
+                        20.0,
+                        10.0
+                    ),
+                    slider(
+                        asset_server,
+                        |inputs, v| inputs.head_lateral_offset = v,
+                        BirdGenInputTypes::HeadLateralOffset,
+                        -15.0,
+                        15.0,
+                        0.0
+                    ),
+                    slider(
+                        asset_server,
+                        |inputs, v| inputs.head_level = v,
+                        BirdGenInputTypes::HeadLevel,
+                        0.0,
+                        80.0,
+                        40.0
+                    ),
+                    slider(
+                        asset_server,
+                        |inputs, v| inputs.head_yaw = v,
+                        BirdGenInputTypes::HeadYaw,
+                        -45.0,
+                        45.0,
+                        0.0
+                    ),
+                    slider(
+                        asset_server,
+                        |inputs, v| inputs.head_pitch = v,
+                        BirdGenInputTypes::HeadPitch,
+                        -80.0,
+                        45.0,
+                        -17.5
+                    ),
+                    separator(),
+                    // Body Section
+                    section_header(asset_server, "Body"),
+                    slider(
+                        asset_server,
+                        |inputs, v| inputs.belly_length = v,
+                        BirdGenInputTypes::BellyLength,
+                        10.0,
+                        100.0,
+                        55.0
+                    ),
+                    slider(
+                        asset_server,
+                        |inputs, v| inputs.belly_size = v,
+                        BirdGenInputTypes::BellySize,
+                        20.0,
+                        60.0,
+                        40.0
+                    ),
+                    slider(
+                        asset_server,
+                        |inputs, v| inputs.belly_fat = v,
+                        BirdGenInputTypes::BellyFat,
+                        50.0,
+                        150.0,
+                        100.0
+                    ),
+                    slider(
+                        asset_server,
+                        |inputs, v| inputs.belly_to_bottom = v,
+                        BirdGenInputTypes::BellyToBottom,
+                        1.0,
+                        50.0,
+                        25.5
+                    ),
+                    slider(
+                        asset_server,
+                        |inputs, v| inputs.bottom_size = v,
+                        BirdGenInputTypes::BottomSize,
+                        5.0,
+                        50.0,
+                        27.5
+                    ),
+                    separator(),
+                    // Tail Section
+                    section_header(asset_server, "Tail"),
+                    slider(
+                        asset_server,
+                        |inputs, v| inputs.tail_length = v,
+                        BirdGenInputTypes::TailLength,
+                        0.0,
+                        100.0,
+                        50.0
+                    ),
+                    slider(
+                        asset_server,
+                        |inputs, v| inputs.tail_width = v,
+                        BirdGenInputTypes::TailWidth,
+                        1.0,
+                        50.0,
+                        25.5
+                    ),
+                    slider(
+                        asset_server,
+                        |inputs, v| inputs.tail_yaw = v,
+                        BirdGenInputTypes::TailYaw,
+                        -45.0,
+                        45.0,
+                        0.0
+                    ),
+                    slider(
+                        asset_server,
+                        |inputs, v| inputs.tail_pitch = v,
+                        BirdGenInputTypes::TailPitch,
+                        -45.0,
+                        90.0,
+                        22.5
+                    ),
+                    slider(
+                        asset_server,
+                        |inputs, v| inputs.tail_roundness = v,
+                        BirdGenInputTypes::TailRoundness,
+                        10.0,
+                        200.0,
+                        105.0
+                    ),
+                    separator(),
+                ]
             ),
-            separator(),
-            // Footer
-            footer(asset_server),
+            (
+                Node {
+                    flex_direction: FlexDirection::Column,
+                    padding: UiRect::axes(px(4), px(2)),
+                    min_width: percent(19),
+                    ..default()
+                },
+                children![
+                    // Regenerate Button
+                    (
+                        regenerate_button(asset_server),
+                        observe(
+                            |_activate: On<Activate>,
+                             mut rebuild_writer: MessageWriter<RebuildBird>,
+                             bird_state: Res<State<BirdState>>| {
+                                if *bird_state.get() == BirdState::BirdVisible {
+                                    rebuild_writer.write(RebuildBird);
+                                }
+                            }
+                        ),
+                    ),
+                    separator(),
+                    // Footer
+                    footer(asset_server),
+                ]
+            ),
         ],
     )
 }
