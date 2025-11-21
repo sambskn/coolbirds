@@ -3,8 +3,13 @@ use crate::{
     ui::BirdUIPlugin,
 };
 use bevy::{
-    input::{ButtonInput, mouse::MouseMotion, mouse::MouseWheel, touch::Touch},
+    input::{
+        ButtonInput,
+        mouse::{MouseMotion, MouseWheel},
+        touch::Touch,
+    },
     input_focus::{InputDispatchPlugin, tab_navigation::TabNavigationPlugin},
+    picking::hover::HoverMap,
     prelude::*,
 };
 
@@ -131,8 +136,9 @@ const TOUCH_ADJUST_SPEED: f32 = 0.05;
 
 fn touch_system(
     touches: Res<Touches>,
-    mut cam_query: Query<&mut Transform, With<Camera3d>>,
+    mut cam_query: Query<(&mut Transform, Entity), With<Camera3d>>,
     time: Res<Time>,
+    hovermap: Res<HoverMap>,
 ) {
     let mut rotate_intent = Vec2::ZERO;
     for touch in touches.iter() {
@@ -142,6 +148,7 @@ fn touch_system(
     if rotate_intent.length() > 0.05 {
         apply_rotation(
             &mut cam_query,
+            &hovermap,
             rotate_intent,
             TOUCH_ADJUST_SPEED * time.delta_secs(),
         );
@@ -153,7 +160,8 @@ const MOUSE_ADJUST_SPEED: f32 = 0.002;
 fn mouse_drag_system(
     mouse_button: Res<ButtonInput<MouseButton>>,
     mut mouse_motion: MessageReader<MouseMotion>,
-    mut cam_query: Query<&mut Transform, With<Camera3d>>,
+    mut cam_query: Query<(&mut Transform, Entity), With<Camera3d>>,
+    hovermap: Res<HoverMap>,
 ) {
     // Only rotate when left mouse button is held
     if !mouse_button.pressed(MouseButton::Left) {
@@ -166,16 +174,22 @@ fn mouse_drag_system(
     }
 
     if rotate_intent.length() > 0.05 {
-        apply_rotation(&mut cam_query, rotate_intent, MOUSE_ADJUST_SPEED);
+        apply_rotation(&mut cam_query, &hovermap, rotate_intent, MOUSE_ADJUST_SPEED);
     }
 }
 
 fn apply_rotation(
-    cam_query: &mut Query<&mut Transform, With<Camera3d>>,
+    cam_query: &mut Query<(&mut Transform, Entity), With<Camera3d>>,
+    hovermap: &Res<HoverMap>,
     rotate_intent: Vec2,
     speed_multiplier: f32,
 ) {
-    for mut tf in cam_query.iter_mut() {
+    for (mut tf, entity) in cam_query.iter_mut() {
+        let cam_match = check_if_hovering_not_ui(&hovermap, entity);
+        if cam_match {
+            continue;
+        }
+
         let origin = Vec3::ZERO;
 
         // X motion = orbit around Y axis (yaw)
@@ -209,6 +223,19 @@ fn apply_rotation(
     }
 }
 
+fn check_if_hovering_not_ui(hovermap: &Res<HoverMap>, camera_entity: Entity) -> bool {
+    // Check if we're hovering over actual content for this 3d camera (not the UI)
+    let mut cam_match = false;
+    for hovers in hovermap.0.values() {
+        for hoverhit in hovers.values() {
+            if hoverhit.camera == camera_entity {
+                cam_match = true;
+            }
+        }
+    }
+    return cam_match;
+}
+
 const ZOOM_SPEED: f32 = 0.1;
 const ZOOM_MIN_DISTANCE: f32 = 2.0;
 const ZOOM_MAX_DISTANCE: f32 = 400.0;
@@ -216,8 +243,9 @@ const ZOOM_MAX_DISTANCE: f32 = 400.0;
 fn zoom_system(
     mut mouse_wheel: MessageReader<MouseWheel>,
     touches: Res<Touches>,
-    mut cam_query: Query<&mut Transform, With<Camera3d>>,
+    mut cam_query: Query<(&mut Transform, Entity), With<Camera3d>>,
     mut previous_pinch_distance: Local<Option<f32>>,
+    hovermap: Res<HoverMap>,
 ) {
     let mut zoom_delta = 0.0;
 
@@ -247,14 +275,19 @@ fn zoom_system(
 
     // Apply zoom
     if zoom_delta.abs() > 0.001 {
-        for mut tf in cam_query.iter_mut() {
-            let origin = Vec3::ZERO;
-            let direction = (tf.translation - origin).normalize();
-            let current_distance = tf.translation.distance(origin);
+        for (mut tf, ent) in cam_query.iter_mut() {
+            // Check if we're hovering over actual content for this 3d camera (not the UI)
+            let cam_match = check_if_hovering_not_ui(&hovermap, ent);
+            // not exactly sure why im inverting this but its what works lol
+            if !cam_match {
+                let origin = Vec3::ZERO;
+                let direction = (tf.translation - origin).normalize();
+                let current_distance = tf.translation.distance(origin);
 
-            let new_distance =
-                (current_distance - zoom_delta).clamp(ZOOM_MIN_DISTANCE, ZOOM_MAX_DISTANCE);
-            tf.translation = origin + direction * new_distance;
+                let new_distance =
+                    (current_distance - zoom_delta).clamp(ZOOM_MIN_DISTANCE, ZOOM_MAX_DISTANCE);
+                tf.translation = origin + direction * new_distance;
+            }
         }
     }
 }
