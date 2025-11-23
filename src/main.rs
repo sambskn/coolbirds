@@ -12,6 +12,7 @@ use bevy::{
     picking::hover::HoverMap,
     prelude::*,
 };
+use bevy_mod_clipboard::ClipboardPlugin;
 
 mod bird;
 mod ui;
@@ -29,17 +30,18 @@ enum BirdState {
 
 fn main() {
     App::new()
-        .add_plugins(
+        .add_plugins((
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Window {
-                    title: "rusty-bird".to_string(),
+                    title: "bird-o-matic".to_string(),
                     fit_canvas_to_parent: true,
                     ..default()
                 }
                 .into(),
                 ..default()
             }),
-        )
+            ClipboardPlugin,
+        ))
         .add_plugins(InputDispatchPlugin)
         .add_plugins(TabNavigationPlugin)
         .add_message::<RebuildBird>()

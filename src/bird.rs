@@ -184,7 +184,7 @@ const NONZERO_THICKNESS: f64 = 0.1; // used in place of 0 when we want parts of 
 // For now tho we'll just spawn two different meshes in Bevy, even though that would make printing it in 3d a bit harder.
 // We'll see!
 
-pub fn generate_bird_head_mesh(input: &BirdGenInputs) -> Mesh {
+fn generate_bird_head_csg_mesh(input: &BirdGenInputs) -> CSGMesh {
     // skull base for head
     let skull: CSGMesh = CSGMesh::sphere(
         input.head_size as f64 / 2.0,
@@ -267,11 +267,16 @@ pub fn generate_bird_head_mesh(input: &BirdGenInputs) -> Mesh {
         .scale(1.1, 1.1, 1.1);
     head_in_place.renormalize();
     head_in_place.subdivide_triangles(std::num::NonZero::<u32>::new(1).unwrap());
+    head_in_place
+}
+
+pub fn generate_bird_head_mesh(input: &BirdGenInputs) -> Mesh {
+    let head_in_place = generate_bird_head_csg_mesh(input);
     // add the x axis rotation to account for y up world we're rocking with in bevy
     head_in_place.rotate(-90.0, 180.0, 0.0).to_bevy_mesh()
 }
 
-pub fn generate_bird_body_mesh(input: &BirdGenInputs) -> Mesh {
+pub fn generate_bird_body_csg_mesh(input: &BirdGenInputs) -> CSGMesh {
     info!("Body step 1, neck and chest");
     let neck = CSGMesh::sphere(
         input.head_size as f64 / 2.0,
@@ -344,18 +349,49 @@ pub fn generate_bird_body_mesh(input: &BirdGenInputs) -> Mesh {
         let cut_box = CSGMesh::cuboid(
             (total_len * 100.0) as f64,
             (total_len * 100.0) as f64,
-            input.belly_size as f64,
+            (input.belly_size * 10.0) as f64,
             None,
         )
         .translate(-100.0, -100.0, cut_height);
 
         body = body.difference(&cut_box);
     }
+    body
+}
 
-    info!("Make bevy mesh");
-
+pub fn generate_bird_body_mesh(input: &BirdGenInputs) -> Mesh {
+    let body = generate_bird_body_csg_mesh(input);
     // add the x axis rotation to account for y up world we're rocking with in bevy
     body.rotate(-90.0, 180.0, 0.0).to_bevy_mesh()
+}
+
+pub fn generate_full_bird_stl_string(input: &BirdGenInputs) -> String {
+    let body = generate_bird_body_csg_mesh(input);
+    let head_in_place = generate_bird_head_csg_mesh(input);
+
+    info!("Generate STL strings, then combine");
+    let body_stl_str = body.to_stl_ascii("bird");
+    let head_stl_str = head_in_place.to_stl_ascii("just_head");
+    // grab triangles from head and add to body
+    {
+        let mut result = body_stl_str.clone();
+
+        // Remove the "endsolid" line from body
+        if let Some(pos) = result.rfind("endsolid") {
+            result.truncate(pos);
+        }
+
+        // Extract facets from head (between "solid" line and "endsolid" line)
+        let facets_start = head_stl_str.find("facet").unwrap_or(head_stl_str.len());
+        let facets_end = head_stl_str.rfind("endsolid").unwrap_or(head_stl_str.len());
+        let head_facets = &head_stl_str[facets_start..facets_end];
+
+        // Combine: body (without endsolid) + head facets + endsolid
+        result.push_str(head_facets);
+        result.push_str("endsolid bird\n");
+
+        result
+    }
 }
 
 /* From https://www.thingiverse.com/thing:139945/files

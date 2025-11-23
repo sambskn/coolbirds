@@ -9,6 +9,7 @@ getrandom = { git = "https://github.com/benfrankel/getrandom" }
 [dependencies]
 accesskit = "0.21.1"
 bevy = { version = "0.17.2", features= ["experimental_bevy_ui_widgets"]}
+bevy_mod_clipboard = "0.1.2"
 csgrs = { git = "https://github.com/sambskn/csgrs.git", branch="bump-geo", features=["bevymesh"] }
 geo = "0.31"
 geo-types = "0.7.17"

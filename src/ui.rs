@@ -1,6 +1,9 @@
 use crate::{
     BirdState, RebuildBird,
-    bird::{BirdGenInputTypes, BirdGenInputs, get_input_type_string, get_input_value_for_type},
+    bird::{
+        BirdGenInputTypes, BirdGenInputs, generate_full_bird_stl_string, get_input_type_string,
+        get_input_value_for_type,
+    },
 };
 use accesskit::{Node as Accessible, Role};
 use bevy::{
@@ -16,6 +19,7 @@ use bevy::{
         TrackClick, UiWidgetsPlugins, ValueChange, observe,
     },
 };
+use bevy_mod_clipboard::Clipboard;
 
 const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
@@ -48,6 +52,9 @@ pub struct UiRoot;
 
 #[derive(Component)]
 struct RegenerateButton;
+
+#[derive(Component)]
+struct STLButton;
 
 #[derive(Component)]
 struct RandomizeButton;
@@ -444,6 +451,25 @@ fn ui_root(asset_server: &AssetServer) -> impl Bundle {
                             }
                         ),
                     ),
+                    // STL Button
+                    (
+                        stl_button(asset_server),
+                        observe(
+                            |_activate: On<Activate>,
+                             bird_inputs: Res<BirdGenInputs>,
+                             mut clipboard: ResMut<Clipboard>| {
+                                // Make a STL string
+                                let stl_str = generate_full_bird_stl_string(&bird_inputs);
+                                // copy to clipboard
+                                let copy_res = clipboard.set_text(stl_str);
+                                if copy_res.is_err() {
+                                    info!("Error copying STL to clipboard. Oops!");
+                                } else {
+                                    info!("Done!");
+                                }
+                            }
+                        ),
+                    ),
                     separator(),
                     // Footer
                     footer(asset_server),
@@ -649,6 +675,36 @@ fn regenerate_button(asset_server: &AssetServer) -> impl Bundle {
     )
 }
 
+fn stl_button(asset_server: &AssetServer) -> impl Bundle {
+    (
+        Node {
+            width: Val::Percent(100.),
+            min_height: px(40.),
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            margin: UiRect::vertical(px(5.)),
+            padding: UiRect::axes(px(8.), px(16)),
+            border: UiRect::all(px(2.)),
+            ..default()
+        },
+        Button,
+        STLButton,
+        Hovered::default(),
+        BackgroundColor(NORMAL_BUTTON),
+        BorderColor::all(Color::BLACK),
+        BorderRadius::all(px(5.)),
+        children![(
+            Text::new("Copy bird STL"),
+            TextFont {
+                font: asset_server.load("fonts/OTBrut-Regular.ttf"),
+                font_size: 20.0,
+                ..default()
+            },
+            TextColor(TEXT_COLOR),
+        )],
+    )
+}
+
 fn footer(asset_server: &AssetServer) -> impl Bundle {
     (
         Text::new("ported/inspired by bird-o-matic by mooncactus"),
@@ -675,7 +731,11 @@ fn update_button_style(
         ),
         (
             Or<(Changed<Hovered>, Added<InteractionDisabled>)>,
-            Or<(With<RegenerateButton>, With<RandomizeButton>)>,
+            Or<(
+                With<RegenerateButton>,
+                With<RandomizeButton>,
+                With<STLButton>,
+            )>,
         ),
     >,
 ) {
@@ -692,7 +752,11 @@ fn update_button_style2(
             &mut BackgroundColor,
             &mut BorderColor,
         ),
-        Or<(With<RegenerateButton>, With<RandomizeButton>)>,
+        Or<(
+            With<RegenerateButton>,
+            With<RandomizeButton>,
+            With<STLButton>,
+        )>,
     >,
     mut removed_disabled: RemovedComponents<InteractionDisabled>,
 ) {
