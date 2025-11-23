@@ -113,7 +113,7 @@ fn on_scroll_handler(
     }
 }
 
-const LINE_HEIGHT: f32 = 40.0;
+const LINE_HEIGHT: f32 = 54.0;
 
 fn send_scroll_events(
     mut mouse_wheel_reader: MessageReader<MouseWheel>,
@@ -511,6 +511,7 @@ fn separator() -> impl Bundle {
     )
 }
 
+const SLIDER_HEIGHT_PX: f32 = 32.0;
 fn slider<F>(
     asset_server: &AssetServer,
     update_fn: F,
@@ -555,7 +556,7 @@ where
                         flex_direction: FlexDirection::Column,
                         justify_content: JustifyContent::Center,
                         align_items: AlignItems::Stretch,
-                        height: px(12.),
+                        height: px(SLIDER_HEIGHT_PX),
                         width: Val::Percent(100.),
                         ..default()
                     },
@@ -570,7 +571,7 @@ where
                         // Slider background rail
                         (
                             Node {
-                                height: px(6.),
+                                height: px(SLIDER_HEIGHT_PX - 8.0),
                                 ..default()
                             },
                             BackgroundColor(SLIDER_TRACK),
@@ -593,13 +594,14 @@ where
                                     SliderThumb,
                                     Node {
                                         display: Display::Flex,
-                                        width: px(12.),
-                                        height: px(12.),
+                                        width: px(SLIDER_HEIGHT_PX),
+                                        height: px(SLIDER_HEIGHT_PX),
                                         position_type: PositionType::Absolute,
                                         left: Val::Percent(0.),
+                                        top: px(-2),
                                         ..default()
                                     },
-                                    BorderRadius::MAX,
+                                    BorderRadius::all(px(6)),
                                     BackgroundColor(SLIDER_THUMB),
                                 ),
                             ],
