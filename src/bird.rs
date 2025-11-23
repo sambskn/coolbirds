@@ -340,16 +340,16 @@ pub fn generate_bird_body_mesh(input: &BirdGenInputs) -> Mesh {
         let cut_height = (input.belly_size * (-1.5 + input.base_flat / 200.0)) as f64;
 
         // Create a large cube to subtract from the bottom
+        // Little hacky with my positioning but idc
         let cut_box = CSGMesh::cuboid(
-            (total_len * 10.0) as f64,
-            (total_len * 10.0) as f64,
+            (total_len * 100.0) as f64,
+            (total_len * 100.0) as f64,
             input.belly_size as f64,
             None,
         )
-        .translate(0.0, 0.0, cut_height);
+        .translate(-100.0, -100.0, cut_height);
 
         body = body.difference(&cut_box);
-        body.renormalize();
     }
 
     info!("Make bevy mesh");
@@ -357,6 +357,7 @@ pub fn generate_bird_body_mesh(input: &BirdGenInputs) -> Mesh {
     // add the x axis rotation to account for y up world we're rocking with in bevy
     body.rotate(-90.0, 180.0, 0.0).to_bevy_mesh()
 }
+
 /* From https://www.thingiverse.com/thing:139945/files
 
 // For Reference: The original Bird-o-Matic OpenSCAD code
