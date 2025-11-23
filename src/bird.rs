@@ -144,12 +144,12 @@ impl Default for BirdGenInputs {
     fn default() -> Self {
         BirdGenInputs {
             beak_length: 15.0,
-            beak_size: 100.0,
+            beak_size: 80.0,
             beak_width: 5.0,
             beak_roundness: 10.0,
             head_size: 22.0,
             head_to_belly: 32.0,
-            eye_size: 5.0,
+            eye_size: 7.0,
             head_lateral_offset: 4.0,
             head_level: 32.0,
             head_yaw: 10.0,
