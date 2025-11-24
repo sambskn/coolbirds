@@ -164,7 +164,7 @@ impl Default for BirdGenInputs {
             tail_yaw: -5.0,
             tail_pitch: 40.0,
             tail_roundness: 80.0,
-            base_flat: 50.0,
+            base_flat: 100.0,
         }
     }
 }
@@ -346,13 +346,14 @@ pub fn generate_bird_body_csg_mesh(input: &BirdGenInputs) -> CSGMesh {
 
         // Create a large cube to subtract from the bottom
         // Little hacky with my positioning but idc
+        // Why doesn't it work in wasm? Makes me crazy!
         let cut_box = CSGMesh::cuboid(
-            (total_len * 100.0) as f64,
-            (total_len * 100.0) as f64,
-            (input.belly_size * 10.0) as f64,
+            (total_len) as f64,
+            (total_len) as f64,
+            input.belly_size as f64,
             None,
         )
-        .translate(-100.0, -100.0, cut_height);
+        .translate(-total_len as f64 / 4.0, -total_len as f64 / 2.0, cut_height);
 
         body = body.difference(&cut_box);
     }
