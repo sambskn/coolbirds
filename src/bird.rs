@@ -169,6 +169,143 @@ impl Default for BirdGenInputs {
     }
 }
 
+impl BirdGenInputs {
+    pub fn get_input_value_for_type(&self, input_type: &BirdGenInputTypes) -> f32 {
+        match input_type {
+            BirdGenInputTypes::BeakLength => self.beak_length,
+            BirdGenInputTypes::BeakSize => self.beak_size,
+            BirdGenInputTypes::BeakWidth => self.beak_width,
+            BirdGenInputTypes::BeakRoundness => self.beak_roundness,
+            BirdGenInputTypes::HeadSize => self.head_size,
+            BirdGenInputTypes::HeadToBelly => self.head_to_belly,
+            BirdGenInputTypes::EyeSize => self.eye_size,
+            BirdGenInputTypes::HeadLateralOffset => self.head_lateral_offset,
+            BirdGenInputTypes::HeadLevel => self.head_level,
+            BirdGenInputTypes::HeadYaw => self.head_yaw,
+            BirdGenInputTypes::HeadPitch => self.head_pitch,
+            BirdGenInputTypes::BellyLength => self.belly_length,
+            BirdGenInputTypes::BellySize => self.belly_size,
+            BirdGenInputTypes::BellyFat => self.belly_fat,
+            BirdGenInputTypes::BellyToBottom => self.belly_to_bottom,
+            BirdGenInputTypes::BottomSize => self.bottom_size,
+            BirdGenInputTypes::TailLength => self.tail_length,
+            BirdGenInputTypes::TailWidth => self.tail_width,
+            BirdGenInputTypes::TailYaw => self.tail_yaw,
+            BirdGenInputTypes::TailPitch => self.tail_pitch,
+            BirdGenInputTypes::TailRoundness => self.tail_roundness,
+            BirdGenInputTypes::BaseFlat => self.base_flat,
+        }
+    }
+
+    pub fn set_input_value_for_type(&mut self, input_type: &BirdGenInputTypes, value: f32) {
+        match input_type {
+            BirdGenInputTypes::BeakLength => self.beak_length = value,
+            BirdGenInputTypes::BeakSize => self.beak_size = value,
+            BirdGenInputTypes::BeakWidth => self.beak_width = value,
+            BirdGenInputTypes::BeakRoundness => self.beak_roundness = value,
+            BirdGenInputTypes::HeadSize => self.head_size = value,
+            BirdGenInputTypes::HeadToBelly => self.head_to_belly = value,
+            BirdGenInputTypes::EyeSize => self.eye_size = value,
+            BirdGenInputTypes::HeadLateralOffset => self.head_lateral_offset = value,
+            BirdGenInputTypes::HeadLevel => self.head_level = value,
+            BirdGenInputTypes::HeadYaw => self.head_yaw = value,
+            BirdGenInputTypes::HeadPitch => self.head_pitch = value,
+            BirdGenInputTypes::BellyLength => self.belly_length = value,
+            BirdGenInputTypes::BellySize => self.belly_size = value,
+            BirdGenInputTypes::BellyFat => self.belly_fat = value,
+            BirdGenInputTypes::BellyToBottom => self.belly_to_bottom = value,
+            BirdGenInputTypes::BottomSize => self.bottom_size = value,
+            BirdGenInputTypes::TailLength => self.tail_length = value,
+            BirdGenInputTypes::TailWidth => self.tail_width = value,
+            BirdGenInputTypes::TailYaw => self.tail_yaw = value,
+            BirdGenInputTypes::TailPitch => self.tail_pitch = value,
+            BirdGenInputTypes::TailRoundness => self.tail_roundness = value,
+            BirdGenInputTypes::BaseFlat => self.base_flat = value,
+        };
+    }
+
+    pub fn randomize_values(&mut self) {
+        use rand::Rng;
+        let mut rng = rand::rng();
+
+        self.beak_length = rng.random_range(0.0..=50.0);
+        self.beak_size = rng.random_range(20.0..=100.0);
+        self.beak_width = rng.random_range(0.0..=25.0);
+        self.beak_roundness = rng.random_range(10.0..=200.0);
+        self.head_size = rng.random_range(10.0..=40.0);
+        self.head_to_belly = rng.random_range(-20.0..=50.0);
+        self.eye_size = rng.random_range(0.0..=20.0);
+        self.head_lateral_offset = rng.random_range(-15.0..=15.0);
+        self.head_level = rng.random_range(0.0..=80.0);
+        self.head_yaw = rng.random_range(-45.0..=45.0);
+        self.head_pitch = rng.random_range(-80.0..=45.0);
+        self.belly_length = rng.random_range(10.0..=100.0);
+        self.belly_size = rng.random_range(20.0..=60.0);
+        self.belly_fat = rng.random_range(50.0..=150.0);
+        self.belly_to_bottom = rng.random_range(1.0..=50.0);
+        self.bottom_size = rng.random_range(5.0..=50.0);
+        self.tail_length = rng.random_range(0.0..=100.0);
+        self.tail_width = rng.random_range(1.0..=50.0);
+        self.tail_yaw = rng.random_range(-45.0..=45.0);
+        self.tail_pitch = rng.random_range(-45.0..=90.0);
+        self.tail_roundness = rng.random_range(10.0..=200.0);
+        self.base_flat = rng.random_range(-100.0..=100.0);
+    }
+
+    pub fn get_child_with(&self, mate: &BirdGenInputs) -> BirdGenInputs {
+        use rand::Rng;
+        let mut rng = rand::rng();
+        let mut child = mate.clone();
+        let all_bird_input_types = vec![
+            BirdGenInputTypes::BeakLength,
+            BirdGenInputTypes::BeakSize,
+            BirdGenInputTypes::BeakWidth,
+            BirdGenInputTypes::BeakRoundness,
+            BirdGenInputTypes::HeadSize,
+            BirdGenInputTypes::HeadToBelly,
+            BirdGenInputTypes::EyeSize,
+            BirdGenInputTypes::HeadLateralOffset,
+            BirdGenInputTypes::HeadLevel,
+            BirdGenInputTypes::HeadYaw,
+            BirdGenInputTypes::HeadPitch,
+            BirdGenInputTypes::BellyLength,
+            BirdGenInputTypes::BellySize,
+            BirdGenInputTypes::BellyFat,
+            BirdGenInputTypes::BellyToBottom,
+            BirdGenInputTypes::BottomSize,
+            BirdGenInputTypes::TailLength,
+            BirdGenInputTypes::TailWidth,
+            BirdGenInputTypes::TailYaw,
+            BirdGenInputTypes::TailPitch,
+            BirdGenInputTypes::TailRoundness,
+            BirdGenInputTypes::BaseFlat,
+        ];
+        // roll the dice for each 'trait'
+        for bird_input_type in all_bird_input_types {
+            // chance to prefer either parent's
+            // some variance to try an represent more dominant traits? idk lol
+            let parent_favor_per_trait = rng.random_range(0.4..=0.6);
+            let prefer_mate_trait = rng.random_bool(parent_favor_per_trait);
+            if !prefer_mate_trait {
+                child.set_input_value_for_type(
+                    &bird_input_type,
+                    self.get_input_value_for_type(&bird_input_type),
+                );
+            }
+
+            // chance to mutate
+            let should_mutate = rng.random_bool(0.05);
+            if should_mutate {
+                let unmutated = child.get_input_value_for_type(&bird_input_type);
+                let mutation_amount = rng.random_range(0.05..0.95); // only shrinks vals rn
+                child.set_input_value_for_type(&bird_input_type, unmutated * mutation_amount);
+            }
+        }
+        // return child
+        child
+    }
+}
+
 // Bumping to 40 made my computer sad :(
 // There is porbably a benefit to tuning the segement/stack count per geometry
 const RESOLUTION_PSUEDO_UNIT: usize = 16;
@@ -348,8 +485,8 @@ pub fn generate_bird_body_csg_mesh(input: &BirdGenInputs) -> CSGMesh {
         // Little hacky with my positioning but idc
         // Why doesn't it work in wasm? Makes me crazy!
         let cut_box = CSGMesh::cuboid(
-            (total_len) as f64,
-            (total_len) as f64,
+            (total_len * 4.0) as f64,
+            (total_len * 4.0) as f64,
             input.belly_size as f64,
             None,
         )
