@@ -167,7 +167,8 @@ fn spawn_camera_and_light(
     window: Single<&Window, With<bevy::window::PrimaryWindow>>,
 ) {
     let window_size = window.physical_size();
-    let bird_box_size = window_size.y / 2 - 4;
+    let buffer = get_bird_camera_buffer_size_from_window(window_size);
+    let bird_box_size = get_bird_camera_size_from_window(window_size, buffer);
     let centered_y = (window_size.y - bird_box_size) / 2;
     // Position camera to look at origin
     let camera_pos = Vec3::new(65.0, 40.0, 65.0);
@@ -178,7 +179,7 @@ fn spawn_camera_and_light(
         Camera {
             viewport: Some(Viewport {
                 physical_position: UVec2 {
-                    x: window_size.x / 2 - bird_box_size - 4,
+                    x: window_size.x / 2 - bird_box_size - buffer,
                     y: centered_y,
                 },
                 physical_size: UVec2 {
@@ -199,7 +200,7 @@ fn spawn_camera_and_light(
         Camera {
             viewport: Some(Viewport {
                 physical_position: UVec2 {
-                    x: window_size.x / 2 + 4,
+                    x: window_size.x / 2 + buffer,
                     y: centered_y,
                 },
                 physical_size: UVec2 {
@@ -334,7 +335,8 @@ fn apply_rotation(
             continue;
         };
         // Make any changes to viewport
-        let bird_box_size = window_size.y / 2 - 4;
+        let buffer = get_bird_camera_buffer_size_from_window(window_size);
+        let bird_box_size = get_bird_camera_size_from_window(window_size, buffer);
         let centered_y = (window_size.y - bird_box_size) / 2;
         match bird_cam.index {
             0 => {
@@ -343,7 +345,7 @@ fn apply_rotation(
                     y: bird_box_size,
                 };
                 viewport.physical_position = UVec2 {
-                    x: window_size.x / 2 - bird_box_size,
+                    x: window_size.x / 2 - bird_box_size - buffer,
                     y: centered_y,
                 };
             }
@@ -353,7 +355,7 @@ fn apply_rotation(
                     y: bird_box_size,
                 };
                 viewport.physical_position = UVec2 {
-                    x: window_size.x / 2 + 4,
+                    x: window_size.x / 2 + buffer,
                     y: centered_y,
                 };
             }
@@ -443,4 +445,13 @@ fn get_two_colors() -> [Color; 2] {
     ];
     let idx = rng.random_range(0..=4) as usize;
     [sources[idx], sources[if idx == 0 { 4 } else { idx - 1 }]]
+}
+
+// these two heleprs are used to make sure our bird viewports dont get too big
+fn get_bird_camera_size_from_window(window_size: UVec2, buffer: u32) -> u32 {
+    (window_size.y / 2).min(window_size.x / 2) - buffer
+}
+
+fn get_bird_camera_buffer_size_from_window(window_size: UVec2) -> u32 {
+    (window_size.y / 32).min(window_size.x / 32)
 }
