@@ -4960,6 +4960,7 @@ dependencies = [
  "csgrs",
  "geo",
  "geo-types",
+ "log",
  "rand 0.9.2",
 ]
 
