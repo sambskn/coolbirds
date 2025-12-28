@@ -58,6 +58,12 @@ pub struct BirdGenInputs {
     pub base_flat: f32, // [-100:100]
 }
 
+#[derive(Resource, Clone, Copy)]
+pub struct RecentBirds {
+    pub left: BirdGenInputs,
+    pub right: BirdGenInputs,
+}
+
 pub enum BirdGenInputTypes {
     BeakLength,
     BeakSize,
@@ -250,6 +256,31 @@ impl BirdGenInputs {
         self.tail_pitch = rng.random_range(-45.0..=90.0);
         self.tail_roundness = rng.random_range(10.0..=200.0);
         self.base_flat = rng.random_range(-100.0..=100.0);
+    }
+
+    pub fn copy_from_other_bird(&mut self, other_bird: &BirdGenInputs) {
+        self.beak_length = other_bird.beak_length;
+        self.beak_size = other_bird.beak_size;
+        self.beak_width = other_bird.beak_width;
+        self.beak_roundness = other_bird.beak_roundness;
+        self.head_size = other_bird.head_size;
+        self.head_to_belly = other_bird.head_to_belly;
+        self.eye_size = other_bird.eye_size;
+        self.head_lateral_offset = other_bird.head_lateral_offset;
+        self.head_level = other_bird.head_level;
+        self.head_yaw = other_bird.head_yaw;
+        self.head_pitch = other_bird.head_pitch;
+        self.belly_length = other_bird.belly_length;
+        self.belly_size = other_bird.belly_size;
+        self.belly_fat = other_bird.belly_fat;
+        self.belly_to_bottom = other_bird.belly_to_bottom;
+        self.bottom_size = other_bird.bottom_size;
+        self.tail_length = other_bird.tail_length;
+        self.tail_width = other_bird.tail_width;
+        self.tail_yaw = other_bird.tail_yaw;
+        self.tail_pitch = other_bird.tail_pitch;
+        self.tail_roundness = other_bird.tail_roundness;
+        self.base_flat = other_bird.base_flat;
     }
 
     pub fn get_child_with(&self, mate: &BirdGenInputs) -> BirdGenInputs {
@@ -483,14 +514,17 @@ pub fn generate_bird_body_csg_mesh(input: &BirdGenInputs) -> CSGMesh {
 
         // Create a large cube to subtract from the bottom
         // Little hacky with my positioning but idc
-        // Why doesn't it work in wasm? Makes me crazy!
         let cut_box = CSGMesh::cuboid(
             (total_len * 4.0) as f64,
             (total_len * 4.0) as f64,
-            input.belly_size as f64,
+            input.belly_size as f64 + (total_len * 4.0) as f64,
             None,
         )
-        .translate(-total_len as f64 / 4.0, -total_len as f64 / 2.0, cut_height);
+        .translate(
+            -total_len as f64 * 2.0,
+            -total_len as f64 * 2.0,
+            cut_height - total_len as f64 * 4.0,
+        );
 
         body = body.difference(&cut_box);
     }

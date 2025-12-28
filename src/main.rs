@@ -1,5 +1,5 @@
 use crate::{
-    bird::{BirdGenInputs, generate_bird_body_mesh, generate_bird_head_mesh},
+    bird::{BirdGenInputs, RecentBirds, generate_bird_body_mesh, generate_bird_head_mesh},
     ui::BirdUIPlugin,
 };
 use bevy::{
@@ -49,6 +49,10 @@ fn main() {
         .insert_state(BirdState::BirdVisible)
         .insert_resource(ClearColor(BG_COLOR))
         .insert_resource(BirdGenInputs::default())
+        .insert_resource(RecentBirds {
+            left: BirdGenInputs::default(),
+            right: BirdGenInputs::default(),
+        })
         .add_plugins(BirdUIPlugin)
         .add_systems(Startup, (spawn_camera_and_light, kick_off_bird_load))
         .add_systems(
@@ -103,6 +107,7 @@ fn spawn_bird_mesh(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut next_bird_state: ResMut<NextState<BirdState>>,
+    mut recent_birds: ResMut<RecentBirds>,
     bird_inputs: Res<BirdGenInputs>,
 ) {
     info!("time to spawn bird");
@@ -120,6 +125,10 @@ fn spawn_bird_mesh(
     random_bird_inputs.randomize_values();
     let left_bird_inputs = current_bird_inputs.get_child_with(&random_bird_inputs);
     let right_bird_inputs = current_bird_inputs.get_child_with(&random_bird_inputs);
+
+    // update RecentBirds
+    recent_birds.left = left_bird_inputs;
+    recent_birds.right = right_bird_inputs;
 
     let left_head_mesh = generate_bird_head_mesh(&left_bird_inputs);
     let left_body_mesh = generate_bird_body_mesh(&left_bird_inputs);

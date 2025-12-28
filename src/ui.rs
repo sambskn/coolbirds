@@ -1,8 +1,8 @@
 use crate::{
     BirdState, RebuildBird,
     bird::{
-        BirdGenInputTypes, BirdGenInputs, generate_full_bird_stl_string, get_input_type_string,
-        get_input_value_for_type,
+        BirdGenInputTypes, BirdGenInputs, RecentBirds, generate_full_bird_stl_string,
+        get_input_type_string, get_input_value_for_type,
     },
 };
 use accesskit::{Node as Accessible, Role};
@@ -19,7 +19,6 @@ use bevy::{
         TrackClick, UiWidgetsPlugins, ValueChange, observe,
     },
 };
-use bevy_mod_clipboard::Clipboard;
 
 const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
@@ -198,211 +197,12 @@ fn ui_root(asset_server: &AssetServer) -> impl Bundle {
         TabGroup::default(),
         UiRoot,
         children![
-            // (
-            //     Node {
-            //         overflow: Overflow::scroll_y(),
-            //         flex_direction: FlexDirection::Column,
-            //         padding: UiRect::axes(px(16), px(2)),
-            //         min_width: percent(80),
-            //         ..default()
-            //     },
-            //     children![
-            //         // Beak Section
-            //         section_header(asset_server, "Beak"),
-            //         slider(
-            //             asset_server,
-            //             |inputs, v| inputs.beak_length = v,
-            //             BirdGenInputTypes::BeakLength,
-            //             0.0,
-            //             50.0,
-            //             25.0
-            //         ),
-            //         slider(
-            //             asset_server,
-            //             |inputs, v| inputs.beak_size = v,
-            //             BirdGenInputTypes::BeakSize,
-            //             20.0,
-            //             100.0,
-            //             60.0
-            //         ),
-            //         slider(
-            //             asset_server,
-            //             |inputs, v| inputs.beak_width = v,
-            //             BirdGenInputTypes::BeakWidth,
-            //             0.0,
-            //             25.0,
-            //             12.5
-            //         ),
-            //         slider(
-            //             asset_server,
-            //             |inputs, v| inputs.beak_roundness = v,
-            //             BirdGenInputTypes::BeakRoundness,
-            //             10.0,
-            //             200.0,
-            //             105.0
-            //         ),
-            //         separator(),
-            //         // Head Section
-            //         section_header(asset_server, "Head"),
-            //         slider(
-            //             asset_server,
-            //             |inputs, v| inputs.head_size = v,
-            //             BirdGenInputTypes::HeadSize,
-            //             10.0,
-            //             40.0,
-            //             25.0
-            //         ),
-            //         slider(
-            //             asset_server,
-            //             |inputs, v| inputs.head_to_belly = v,
-            //             BirdGenInputTypes::HeadToBelly,
-            //             -20.0,
-            //             50.0,
-            //             15.0
-            //         ),
-            //         slider(
-            //             asset_server,
-            //             |inputs, v| inputs.eye_size = v,
-            //             BirdGenInputTypes::EyeSize,
-            //             0.0,
-            //             20.0,
-            //             10.0
-            //         ),
-            //         slider(
-            //             asset_server,
-            //             |inputs, v| inputs.head_lateral_offset = v,
-            //             BirdGenInputTypes::HeadLateralOffset,
-            //             -15.0,
-            //             15.0,
-            //             0.0
-            //         ),
-            //         slider(
-            //             asset_server,
-            //             |inputs, v| inputs.head_level = v,
-            //             BirdGenInputTypes::HeadLevel,
-            //             0.0,
-            //             80.0,
-            //             40.0
-            //         ),
-            //         slider(
-            //             asset_server,
-            //             |inputs, v| inputs.head_yaw = v,
-            //             BirdGenInputTypes::HeadYaw,
-            //             -45.0,
-            //             45.0,
-            //             0.0
-            //         ),
-            //         slider(
-            //             asset_server,
-            //             |inputs, v| inputs.head_pitch = v,
-            //             BirdGenInputTypes::HeadPitch,
-            //             -80.0,
-            //             45.0,
-            //             -17.5
-            //         ),
-            //         separator(),
-            //         // Body Section
-            //         section_header(asset_server, "Body"),
-            //         slider(
-            //             asset_server,
-            //             |inputs, v| inputs.belly_length = v,
-            //             BirdGenInputTypes::BellyLength,
-            //             10.0,
-            //             100.0,
-            //             55.0
-            //         ),
-            //         slider(
-            //             asset_server,
-            //             |inputs, v| inputs.belly_size = v,
-            //             BirdGenInputTypes::BellySize,
-            //             20.0,
-            //             60.0,
-            //             40.0
-            //         ),
-            //         slider(
-            //             asset_server,
-            //             |inputs, v| inputs.belly_fat = v,
-            //             BirdGenInputTypes::BellyFat,
-            //             50.0,
-            //             150.0,
-            //             100.0
-            //         ),
-            //         slider(
-            //             asset_server,
-            //             |inputs, v| inputs.belly_to_bottom = v,
-            //             BirdGenInputTypes::BellyToBottom,
-            //             1.0,
-            //             50.0,
-            //             25.5
-            //         ),
-            //         slider(
-            //             asset_server,
-            //             |inputs, v| inputs.bottom_size = v,
-            //             BirdGenInputTypes::BottomSize,
-            //             5.0,
-            //             50.0,
-            //             27.5
-            //         ),
-            //         separator(),
-            //         // Tail Section
-            //         section_header(asset_server, "Tail"),
-            //         slider(
-            //             asset_server,
-            //             |inputs, v| inputs.tail_length = v,
-            //             BirdGenInputTypes::TailLength,
-            //             0.0,
-            //             100.0,
-            //             50.0
-            //         ),
-            //         slider(
-            //             asset_server,
-            //             |inputs, v| inputs.tail_width = v,
-            //             BirdGenInputTypes::TailWidth,
-            //             1.0,
-            //             50.0,
-            //             25.5
-            //         ),
-            //         slider(
-            //             asset_server,
-            //             |inputs, v| inputs.tail_yaw = v,
-            //             BirdGenInputTypes::TailYaw,
-            //             -45.0,
-            //             45.0,
-            //             0.0
-            //         ),
-            //         slider(
-            //             asset_server,
-            //             |inputs, v| inputs.tail_pitch = v,
-            //             BirdGenInputTypes::TailPitch,
-            //             -45.0,
-            //             90.0,
-            //             22.5
-            //         ),
-            //         slider(
-            //             asset_server,
-            //             |inputs, v| inputs.tail_roundness = v,
-            //             BirdGenInputTypes::TailRoundness,
-            //             10.0,
-            //             200.0,
-            //             105.0
-            //         ),
-            //         separator(),
-            //         slider(
-            //             asset_server,
-            //             |inputs, v| inputs.base_flat = v,
-            //             BirdGenInputTypes::BaseFlat,
-            //             -100.0,
-            //             100.0,
-            //             0.0
-            //         ),
-            //     ]
-            // ),
             (
                 Node {
                     flex_direction: FlexDirection::Column,
                     padding: UiRect::axes(px(4), px(2)),
                     margin: UiRect::axes(px(16), px(0)),
-                    min_width: percent(25),
+
                     ..default()
                 },
                 children![
@@ -419,28 +219,70 @@ fn ui_root(asset_server: &AssetServer) -> impl Bundle {
                             }
                         ),
                     ),
-                    // // STL Button
-                    // (
-                    //     stl_button(asset_server),
-                    //     observe(
-                    //         |_activate: On<Activate>,
-                    //          bird_inputs: Res<BirdGenInputs>,
-                    //          mut clipboard: ResMut<Clipboard>| {
-                    //             // Make a STL string
-                    //             let stl_str = generate_full_bird_stl_string(&bird_inputs);
-                    //             // copy to clipboard
-                    //             let copy_res = clipboard.set_text(stl_str);
-                    //             if copy_res.is_err() {
-                    //                 info!("Error copying STL to clipboard. Oops!");
-                    //             } else {
-                    //                 info!("Done!");
-                    //             }
-                    //         }
-                    //     ),
-                    // ),
+                    // 'Randomize da bird mon' Button
+                    (
+                        randomize_birdseed_button(asset_server),
+                        observe(
+                            |_activate: On<Activate>,
+                             mut bird_inputs: ResMut<BirdGenInputs>,
+                             mut rebuild_writer: MessageWriter<RebuildBird>,
+                             bird_state: Res<State<BirdState>>| {
+                                if *bird_state.get() == BirdState::BirdVisible {
+                                    bird_inputs.randomize_values();
+                                    rebuild_writer.write(RebuildBird);
+                                }
+                            }
+                        ),
+                    ),
                     separator(),
                     // Footer
                     footer(asset_server),
+                ]
+            ),
+            (
+                Node {
+                    flex_direction: FlexDirection::Column,
+                    padding: UiRect::axes(px(4), px(2)),
+                    margin: UiRect::axes(px(16), px(0)),
+                    ..default()
+                },
+                children![
+                    // Prefer left bird
+                    (
+                        pick_left_bird_button(asset_server),
+                        observe(
+                            |_activate: On<Activate>,
+                             mut bird_inputs: ResMut<BirdGenInputs>,
+                             recent_birds: Res<RecentBirds>,
+                             mut rebuild_writer: MessageWriter<RebuildBird>,
+
+                             bird_state: Res<State<BirdState>>| {
+                                if *bird_state.get() == BirdState::BirdVisible {
+                                    // set bird inputs to be equal to left bird
+                                    bird_inputs.copy_from_other_bird(&recent_birds.left);
+                                    rebuild_writer.write(RebuildBird);
+                                }
+                            }
+                        ),
+                    ),
+                    // Nah that right bird is right tho
+                    (
+                        pick_right_bird_button(asset_server),
+                        observe(
+                            |_activate: On<Activate>,
+                             mut bird_inputs: ResMut<BirdGenInputs>,
+                             recent_birds: Res<RecentBirds>,
+                             mut rebuild_writer: MessageWriter<RebuildBird>,
+
+                             bird_state: Res<State<BirdState>>| {
+                                if *bird_state.get() == BirdState::BirdVisible {
+                                    // set bird inputs to be equal to left bird
+                                    bird_inputs.copy_from_other_bird(&recent_birds.right);
+                                    rebuild_writer.write(RebuildBird);
+                                }
+                            }
+                        ),
+                    ),
                 ]
             ),
         ],
@@ -602,7 +444,97 @@ fn regenerate_button(asset_server: &AssetServer) -> impl Bundle {
         BorderColor::all(Color::BLACK),
         BorderRadius::all(px(5.)),
         children![(
-            Text::new("new birds please"),
+            Text::new("new birds PLEASE"),
+            TextFont {
+                font: asset_server.load("fonts/OTBrut-Regular.ttf"),
+                font_size: 20.0,
+                ..default()
+            },
+            TextColor(TEXT_COLOR),
+        )],
+    )
+}
+
+fn randomize_birdseed_button(asset_server: &AssetServer) -> impl Bundle {
+    (
+        Node {
+            width: Val::Percent(100.),
+            min_height: px(40.),
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            margin: UiRect::vertical(px(5.)),
+            padding: UiRect::axes(px(8.), px(16)),
+            border: UiRect::all(px(2.)),
+            ..default()
+        },
+        Button,
+        RegenerateButton,
+        Hovered::default(),
+        BackgroundColor(NORMAL_BUTTON),
+        BorderColor::all(Color::BLACK),
+        BorderRadius::all(px(5.)),
+        children![(
+            Text::new("slop up the bird"),
+            TextFont {
+                font: asset_server.load("fonts/OTBrut-Regular.ttf"),
+                font_size: 20.0,
+                ..default()
+            },
+            TextColor(TEXT_COLOR),
+        )],
+    )
+}
+
+fn pick_left_bird_button(asset_server: &AssetServer) -> impl Bundle {
+    (
+        Node {
+            width: Val::Percent(100.),
+            min_height: px(40.),
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            margin: UiRect::vertical(px(5.)),
+            padding: UiRect::axes(px(8.), px(16)),
+            border: UiRect::all(px(2.)),
+            ..default()
+        },
+        Button,
+        RegenerateButton,
+        Hovered::default(),
+        BackgroundColor(NORMAL_BUTTON),
+        BorderColor::all(Color::BLACK),
+        BorderRadius::all(px(5.)),
+        children![(
+            Text::new("left is better"),
+            TextFont {
+                font: asset_server.load("fonts/OTBrut-Regular.ttf"),
+                font_size: 20.0,
+                ..default()
+            },
+            TextColor(TEXT_COLOR),
+        )],
+    )
+}
+
+fn pick_right_bird_button(asset_server: &AssetServer) -> impl Bundle {
+    (
+        Node {
+            width: Val::Percent(100.),
+            min_height: px(40.),
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            margin: UiRect::vertical(px(5.)),
+            padding: UiRect::axes(px(8.), px(16)),
+            border: UiRect::all(px(2.)),
+            ..default()
+        },
+        Button,
+        RegenerateButton,
+        Hovered::default(),
+        BackgroundColor(NORMAL_BUTTON),
+        BorderColor::all(Color::BLACK),
+        BorderRadius::all(px(5.)),
+        children![(
+            Text::new("right is better"),
             TextFont {
                 font: asset_server.load("fonts/OTBrut-Regular.ttf"),
                 font_size: 20.0,
