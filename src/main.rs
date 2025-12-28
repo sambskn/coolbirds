@@ -14,6 +14,7 @@ use bevy::{
     prelude::*,
 };
 use bevy_mod_clipboard::ClipboardPlugin;
+use rand::seq::IndexedRandom;
 
 mod bird;
 mod ui;
@@ -91,13 +92,43 @@ struct BirdMesh;
 
 #[derive(Component)]
 struct BirdCam {
-    pub index: usize,
+    pub focus: BirdCamFocus,
 }
 
-fn bird_offset_for_index(index: usize) -> Vec3 {
+#[derive(Copy, Clone)]
+enum BirdCamFocus {
+    LeftBird,
+    RightBird,
+    SeedBird,
+}
+
+impl BirdCam {
+    pub fn left() -> Self {
+        BirdCam {
+            focus: BirdCamFocus::LeftBird,
+        }
+    }
+    pub fn right() -> Self {
+        BirdCam {
+            focus: BirdCamFocus::RightBird,
+        }
+    }
+    pub fn seed() -> Self {
+        BirdCam {
+            focus: BirdCamFocus::SeedBird,
+        }
+    }
+}
+
+fn get_bird_transform_offset(focus: BirdCamFocus) -> Vec3 {
+    let mult = match focus {
+        BirdCamFocus::LeftBird => 0.0,
+        BirdCamFocus::RightBird => 1.0,
+        BirdCamFocus::SeedBird => -1.0,
+    };
     Vec3 {
         x: 0.0,
-        y: 100000.0 * index as f32,
+        y: 100000.0 * mult,
         z: 0.0,
     }
 }
@@ -111,16 +142,25 @@ fn spawn_bird_mesh(
     bird_inputs: Res<BirdGenInputs>,
 ) {
     info!("time to spawn bird");
-    let colors = get_two_colors();
-    let basic_material = materials.add(StandardMaterial {
+    let colors = get_colors(3);
+    let left_bird_mat = materials.add(StandardMaterial {
         base_color: colors[0],
         ..default()
     });
-    let basic_material_2 = materials.add(StandardMaterial {
+    let right_bird_mat = materials.add(StandardMaterial {
         base_color: colors[1],
         ..default()
     });
+    let seed_bird_mat = materials.add(StandardMaterial {
+        base_color: colors[2],
+        ..default()
+    });
+
     let current_bird_inputs = bird_inputs.into_inner();
+    // create mesh of current bird for display
+    let seed_head_mesh = generate_bird_head_mesh(&current_bird_inputs);
+    let seed_body_mesh = generate_bird_body_mesh(&current_bird_inputs);
+
     let mut random_bird_inputs = BirdGenInputs::default();
     random_bird_inputs.randomize_values();
     let left_bird_inputs = current_bird_inputs.get_child_with(&random_bird_inputs);
@@ -134,28 +174,39 @@ fn spawn_bird_mesh(
     let left_body_mesh = generate_bird_body_mesh(&left_bird_inputs);
     let right_head_mesh = generate_bird_head_mesh(&right_bird_inputs);
     let right_body_mesh = generate_bird_body_mesh(&right_bird_inputs);
-
+    commands.spawn((
+        Mesh3d(meshes.add(seed_head_mesh)),
+        MeshMaterial3d(seed_bird_mat.clone()),
+        Transform::from_xyz(0.0, -100000.0, 0.0),
+        BirdMesh,
+    ));
+    commands.spawn((
+        Mesh3d(meshes.add(seed_body_mesh)),
+        MeshMaterial3d(seed_bird_mat),
+        Transform::from_xyz(0.0, -100000.0, 0.0),
+        BirdMesh,
+    ));
     commands.spawn((
         Mesh3d(meshes.add(left_head_mesh)),
-        MeshMaterial3d(basic_material.clone()),
+        MeshMaterial3d(left_bird_mat.clone()),
         Transform::from_xyz(0.0, 0.0, 0.0),
         BirdMesh,
     ));
     commands.spawn((
         Mesh3d(meshes.add(left_body_mesh)),
-        MeshMaterial3d(basic_material),
+        MeshMaterial3d(left_bird_mat),
         Transform::from_xyz(0.0, 0.0, 0.0),
         BirdMesh,
     ));
     commands.spawn((
         Mesh3d(meshes.add(right_head_mesh)),
-        MeshMaterial3d(basic_material_2.clone()),
+        MeshMaterial3d(right_bird_mat.clone()),
         Transform::from_xyz(0.0, 100000.0, 0.0),
         BirdMesh,
     ));
     commands.spawn((
         Mesh3d(meshes.add(right_body_mesh)),
-        MeshMaterial3d(basic_material_2),
+        MeshMaterial3d(right_bird_mat),
         Transform::from_xyz(0.0, 100000.0, 0.0),
         BirdMesh,
     ));
@@ -169,7 +220,9 @@ fn spawn_camera_and_light(
     let window_size = window.physical_size();
     let buffer = get_bird_camera_buffer_size_from_window(window_size);
     let bird_box_size = get_bird_camera_size_from_window(window_size, buffer);
+    let bird_seed_preview_size = bird_box_size / 2;
     let centered_y = (window_size.y - bird_box_size) / 2;
+    let centered_x = (window_size.x - bird_box_size) / 2;
     // Position camera to look at origin
     let camera_pos = Vec3::new(65.0, 40.0, 65.0);
     let look_at = Vec3::ZERO;
@@ -191,7 +244,7 @@ fn spawn_camera_and_light(
             order: 0,
             ..default()
         },
-        BirdCam { index: 0 },
+        BirdCam::left(),
         Transform::from_translation(camera_pos).looking_at(look_at, Vec3::Y),
     ));
 
@@ -212,9 +265,39 @@ fn spawn_camera_and_light(
             order: 1,
             ..default()
         },
-        BirdCam { index: 1 },
-        Transform::from_translation(camera_pos + bird_offset_for_index(1))
-            .looking_at(look_at + bird_offset_for_index(1), Vec3::Y),
+        BirdCam::right(),
+        Transform::from_translation(
+            camera_pos + get_bird_transform_offset(BirdCamFocus::RightBird),
+        )
+        .looking_at(
+            look_at + get_bird_transform_offset(BirdCamFocus::RightBird),
+            Vec3::Y,
+        ),
+    ));
+
+    commands.spawn((
+        Camera3d::default(),
+        Camera {
+            viewport: Some(Viewport {
+                physical_position: UVec2 {
+                    x: centered_x,
+                    y: centered_y - bird_seed_preview_size,
+                },
+                physical_size: UVec2 {
+                    x: bird_seed_preview_size,
+                    y: bird_seed_preview_size,
+                },
+                ..default()
+            }),
+            order: 3,
+            ..default()
+        },
+        BirdCam::seed(),
+        Transform::from_translation(camera_pos + get_bird_transform_offset(BirdCamFocus::SeedBird))
+            .looking_at(
+                look_at + get_bird_transform_offset(BirdCamFocus::SeedBird),
+                Vec3::Y,
+            ),
     ));
 
     commands.spawn((
@@ -299,7 +382,7 @@ fn apply_rotation(
             continue;
         }
 
-        let origin = Vec3::ZERO + bird_offset_for_index(bird_cam.index);
+        let origin = Vec3::ZERO + get_bird_transform_offset(bird_cam.focus);
 
         // X motion = orbit around Y axis (yaw)
         let yaw_delta = rotate_intent.x * std::f32::consts::PI * speed_multiplier;
@@ -337,9 +420,11 @@ fn apply_rotation(
         // Make any changes to viewport
         let buffer = get_bird_camera_buffer_size_from_window(window_size);
         let bird_box_size = get_bird_camera_size_from_window(window_size, buffer);
+        let bird_seed_preview_size = bird_box_size / 2;
         let centered_y = (window_size.y - bird_box_size) / 2;
-        match bird_cam.index {
-            0 => {
+        let centered_x = (window_size.x - bird_box_size / 2) / 2;
+        match bird_cam.focus {
+            BirdCamFocus::LeftBird => {
                 viewport.physical_size = UVec2 {
                     x: bird_box_size,
                     y: bird_box_size,
@@ -349,7 +434,7 @@ fn apply_rotation(
                     y: centered_y,
                 };
             }
-            1 => {
+            BirdCamFocus::RightBird => {
                 viewport.physical_size = UVec2 {
                     x: bird_box_size,
                     y: bird_box_size,
@@ -359,7 +444,16 @@ fn apply_rotation(
                     y: centered_y,
                 };
             }
-            _ => {}
+            BirdCamFocus::SeedBird => {
+                viewport.physical_position = UVec2 {
+                    x: centered_x,
+                    y: centered_y - bird_seed_preview_size,
+                };
+                viewport.physical_size = UVec2 {
+                    x: bird_seed_preview_size,
+                    y: bird_seed_preview_size,
+                };
+            }
         }
     }
 }
@@ -421,7 +515,7 @@ fn zoom_system(
             let cam_match = check_if_hovering_not_ui(&hovermap, ent);
             // not exactly sure why im inverting this but its what works lol
             if !cam_match {
-                let origin = Vec3::ZERO + bird_offset_for_index(bird_cam.index);
+                let origin = Vec3::ZERO + get_bird_transform_offset(bird_cam.focus);
                 let direction = (tf.translation - origin).normalize();
                 let current_distance = tf.translation.distance(origin);
 
@@ -433,8 +527,7 @@ fn zoom_system(
     }
 }
 
-fn get_two_colors() -> [Color; 2] {
-    use rand::Rng;
+fn get_colors(num_colors: usize) -> Vec<Color> {
     let mut rng = rand::rng();
     let sources = vec![
         Color::linear_rgb(247.0 / 255.0, 37.0 / 255.0, 133.0 / 255.0), // Neon Pink
@@ -443,8 +536,10 @@ fn get_two_colors() -> [Color; 2] {
         Color::linear_rgb(190.0 / 255.0, 237.0 / 255.0, 170.0 / 255.0), // Tea Green
         Color::linear_rgb(247.0 / 255.0, 179.0 / 255.0, 43.0 / 255.0), // Sunflower Gold
     ];
-    let idx = rng.random_range(0..=4) as usize;
-    [sources[idx], sources[if idx == 0 { 4 } else { idx - 1 }]]
+    sources
+        .choose_multiple(&mut rng, num_colors)
+        .map(|color| *color)
+        .collect()
 }
 
 // these two heleprs are used to make sure our bird viewports dont get too big
