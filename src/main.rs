@@ -222,7 +222,7 @@ fn spawn_camera_and_light(
     let bird_box_size = get_bird_camera_size_from_window(window_size, buffer);
     let bird_seed_preview_size = bird_box_size / 2;
     let centered_y = (window_size.y - bird_box_size) / 2;
-    let centered_x = (window_size.x - bird_box_size) / 2;
+    let centered_x = (window_size.x - bird_box_size / 2) / 2;
     // Position camera to look at origin
     let camera_pos = Vec3::new(65.0, 40.0, 65.0);
     let look_at = Vec3::ZERO;
@@ -289,7 +289,7 @@ fn spawn_camera_and_light(
                 },
                 ..default()
             }),
-            order: 3,
+            order: 2,
             ..default()
         },
         BirdCam::seed(),

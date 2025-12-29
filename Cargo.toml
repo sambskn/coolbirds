@@ -1,6 +1,6 @@
 [package]
 name = "rusty-bird"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 
 # Enable a small amount of optimization in the dev profile.
@@ -11,16 +11,10 @@ opt-level = 1
 [profile.dev.package."*"]
 opt-level = 3
 
-[toolchain]
-channel = "nightly"
-
-[patch.crates-io]
-getrandom = { git = "https://github.com/benfrankel/getrandom" }
-
 [dependencies]
 log = { version = "*", features = ["max_level_debug", "release_max_level_warn"] }
 accesskit = "0.21.1"
-bevy = { version = "0.17", features= ["experimental_bevy_ui_widgets"]}
+bevy = { version = "0.17.3", features= ["experimental_bevy_ui_widgets"]}
 bevy_mod_clipboard = "0.1.2"
 csgrs = { git = "https://github.com/sambskn/csgrs.git", branch="bump-geo", features=["bevymesh"] }
 geo = "0.31"
@@ -38,7 +32,3 @@ codegen-units = 1
 lto = true
 # Strip all debugging information from the binary to slightly reduce file size.
 strip = "debuginfo"
-
-[target.x86_64-unknown-linux-gnu]
-linker = "clang"
-rustflags = ["-C", "link-arg=-fuse-ld=/usr/bin/mold"]

@@ -1,29 +1,29 @@
 use crate::{
     BirdState, RebuildBird,
-    bird::{
-        BirdGenInputTypes, BirdGenInputs, RecentBirds, generate_full_bird_stl_string,
-        get_input_type_string, get_input_value_for_type,
-    },
+    bird::{BirdGenInputs, RecentBirds},
 };
-use accesskit::{Node as Accessible, Role};
 use bevy::{
-    a11y::AccessibilityNode,
-    color::palettes::basic::*,
     input::mouse::{MouseScrollUnit, MouseWheel},
-    input_focus::tab_navigation::TabGroup,
     picking::hover::{HoverMap, Hovered},
     prelude::*,
     ui::InteractionDisabled,
-    ui_widgets::{
-        Activate, Button, CoreSliderDragState, Slider, SliderRange, SliderThumb, SliderValue,
-        TrackClick, UiWidgetsPlugins, ValueChange, observe,
-    },
+    ui_widgets::{Activate, Button, UiWidgetsPlugins, observe},
 };
 
-const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
-const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
-const _SLIDER_TRACK: Color = Color::srgb(0.05, 0.05, 0.05);
-const SLIDER_THUMB: Color = Color::srgb(0.35, 0.75, 0.35);
+const NORMAL_BUTTON: Color = Color::srgba(0.15, 0.15, 0.15, 0.01);
+const HOVERED_BUTTON: Color = Color::srgba(0.25, 0.25, 0.25, 0.1);
+const NORMAL_BUTTON_BORDER: Color = Color::Srgba(Srgba {
+    red: 0.02,
+    green: 0.12,
+    blue: 0.33,
+    alpha: 0.1,
+});
+const HOVERED_BUTTON_BORDER: Color = Color::Srgba(Srgba {
+    red: 0.9,
+    green: 0.92,
+    blue: 0.9,
+    alpha: 0.5,
+});
 const TEXT_COLOR: Color = Color::srgb(0.9, 0.9, 0.9);
 
 pub struct BirdUIPlugin;
@@ -35,32 +35,12 @@ impl Plugin for BirdUIPlugin {
                 Update,
                 (
                     send_scroll_events,
-                    update_slider_values,
-                    update_slider_styles,
-                    update_slider_styles2,
                     update_button_style,
                     update_button_style2,
                 ),
             )
             .add_observer(on_scroll_handler);
     }
-}
-
-#[derive(Component)]
-pub struct UiRoot;
-
-#[derive(Component)]
-struct RegenerateButton;
-
-#[derive(Component)]
-struct STLButton;
-
-#[derive(Component)]
-struct RandomizeButton;
-
-#[derive(Component)]
-struct BirdInputSlider {
-    input_type: BirdGenInputTypes,
 }
 
 /// UI scrolling event.
@@ -150,112 +130,259 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         Camera2d,
         Camera {
-            order: 2,
+            order: 3,
             ..default()
         },
         IsDefaultUiCamera,
     ));
-    commands.spawn(ui_root(&asset_server));
+
+    // app label
     commands.spawn((
         Node {
             position_type: PositionType::Absolute,
-            top: px(24),
-            left: px(24),
+            right: px(24),
+            bottom: px(24),
+            display: Display::Flex,
+            flex_direction: FlexDirection::Column,
+            ..default()
+        },
+        children![
+            (
+                Node {
+                    display: Display::Flex,
+                    flex_direction: FlexDirection::Row,
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::SpaceBetween,
+                    ..default()
+                },
+                children![
+                    (
+                        Text::new("bird-o-matic"),
+                        TextFont {
+                            font: asset_server.load("fonts/OTBrut-Regular.ttf"),
+                            font_size: 18.0,
+                            ..default()
+                        },
+                        TextColor(TEXT_COLOR),
+                    ),
+                    (
+                        Text::new("v0.2.0"),
+                        TextFont {
+                            font: asset_server.load("fonts/OTBrut-Regular.ttf"),
+                            font_size: 12.0,
+                            ..default()
+                        },
+                        TextColor(TEXT_COLOR),
+                    )
+                ]
+            ),
+            footer(&asset_server)
+        ],
+    ));
+    // seed bird labels
+    commands.spawn((
+        Node {
+            position_type: PositionType::Absolute,
+            top: px(48),
+            width: vw(100),
+            display: Display::Flex,
+            flex_direction: FlexDirection::Column,
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::FlexStart,
             ..default()
         },
         children![(
-            Text::new("bird-o-matic"),
+            Node {
+                margin: UiRect {
+                    left: px(275),
+                    right: px(0),
+                    top: px(0),
+                    bottom: px(0)
+                },
+                ..default()
+            },
+            Text::new("SEED BIRD"),
             TextFont {
-                font: asset_server.load("fonts/PPMonumentCondensed-BoldItalic.ttf"),
-                font_size: 48.0,
+                font: asset_server.load("fonts/OTBrut-Regular.ttf"),
+                font_size: 32.0,
+                ..default()
+            },
+            TextColor(TEXT_COLOR),
+        ), (
+            Node {
+                margin: UiRect {
+                    left: px(326),
+                    right: px(0),
+                    top: px(-10),
+                    bottom: px(0)
+                },
+                max_width: vw(40),
+                ..default()
+            },
+            Text::new("bird of origin, it's 'genome' will be mixed with algorithm-provided birds to create new progeny"),
+            TextFont {
+                font: asset_server.load("fonts/OTBrut-Regular.ttf"),
+                font_size: 12.0,
                 ..default()
             },
             TextColor(TEXT_COLOR),
         )],
     ));
-}
 
-fn ui_root(asset_server: &AssetServer) -> impl Bundle {
-    (
+    // seed bird actions
+    commands.spawn((
         Node {
             position_type: PositionType::Absolute,
-            bottom: px(4),
-            left: px(24),
-            right: px(24),
-            min_width: vw(10),
-            max_width: vw(75),
-            max_height: vh(30),
-            flex_direction: FlexDirection::Row,
-            padding: UiRect::axes(px(30.), px(20)),
+            top: px(32),
+            right: vw(50),
+            max_width: vw(45),
+            padding: UiRect {
+                left: px(0),
+                right: px(100),
+                top: px(0),
+                bottom: px(0),
+            },
+            display: Display::Flex,
+            flex_direction: FlexDirection::Column,
+            align_items: AlignItems::FlexEnd,
+            justify_content: JustifyContent::End,
             ..default()
         },
-        Pickable {
-            should_block_lower: true,
-            is_hoverable: true,
+        children![
+            // TODO: implement these lol
+            // (bird_action_button(&asset_server, "copy".to_string())),
+            // (bird_action_button(&asset_server, "paste".to_string())),
+            (
+                bird_action_button(&asset_server, "randomize".to_string()),
+                observe(
+                    |_activate: On<Activate>,
+                     mut bird_inputs: ResMut<BirdGenInputs>,
+                     mut rebuild_writer: MessageWriter<RebuildBird>,
+                     bird_state: Res<State<BirdState>>| {
+                        if *bird_state.get() == BirdState::BirdVisible {
+                            bird_inputs.randomize_values();
+                            rebuild_writer.write(RebuildBird);
+                        }
+                    }
+                )
+            ),
+        ],
+    ));
+
+    // left bird label
+    commands.spawn((
+        Node {
+            position_type: PositionType::Absolute,
+            left: vw(18),
+            height: vh(100),
+            display: Display::Flex,
+            flex_direction: FlexDirection::Column,
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            ..default()
         },
-        BackgroundColor(Color::srgba(0.1, 0.1, 0.1, 0.95)),
-        TabGroup::default(),
-        UiRoot,
+        children![(
+            Node {
+                margin: UiRect {
+                    left: px(0),
+                    right: px(0),
+                    top: px(20),
+                    bottom: px(0)
+                },
+                ..default()
+            },
+            Text::new("LEFT"),
+            TextFont {
+                font: asset_server.load("fonts/OTBrut-Regular.ttf"),
+                font_size: 32.0,
+                ..default()
+            },
+            TextColor(TEXT_COLOR),
+        )],
+    ));
+
+    // right bird label
+    commands.spawn((
+        Node {
+            position_type: PositionType::Absolute,
+            right: vw(18),
+            height: vh(100),
+            display: Display::Flex,
+            flex_direction: FlexDirection::Column,
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            ..default()
+        },
+        children![(
+            Node {
+                margin: UiRect {
+                    left: px(0),
+                    right: px(0),
+                    top: px(0),
+                    bottom: px(60)
+                },
+                ..default()
+            },
+            Text::new("RIGHT"),
+            TextFont {
+                font: asset_server.load("fonts/OTBrut-Regular.ttf"),
+                font_size: 32.0,
+                ..default()
+            },
+            TextColor(TEXT_COLOR),
+        )],
+    ));
+
+    // general actions
+    commands.spawn((
+        Node {
+            position_type: PositionType::Absolute,
+            bottom: vh(5),
+            height: vh(40),
+            left: vw(35),
+            right: vw(35),
+            display: Display::Flex,
+            flex_direction: FlexDirection::Column,
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::End,
+            ..default()
+        },
         children![
             (
                 Node {
-                    flex_direction: FlexDirection::Column,
-                    padding: UiRect::axes(px(4), px(2)),
-                    margin: UiRect::axes(px(16), px(0)),
-
+                    margin: UiRect {
+                        left: px(0),
+                        right: px(0),
+                        top: px(0),
+                        bottom: px(0)
+                    },
                     ..default()
                 },
-                children![
-                    // Regenerate Button
-                    (
-                        regenerate_button(asset_server),
-                        observe(
-                            |_activate: On<Activate>,
-                             mut rebuild_writer: MessageWriter<RebuildBird>,
-                             bird_state: Res<State<BirdState>>| {
-                                if *bird_state.get() == BirdState::BirdVisible {
-                                    rebuild_writer.write(RebuildBird);
-                                }
-                            }
-                        ),
-                    ),
-                    // 'Randomize da bird mon' Button
-                    (
-                        randomize_birdseed_button(asset_server),
-                        observe(
-                            |_activate: On<Activate>,
-                             mut bird_inputs: ResMut<BirdGenInputs>,
-                             mut rebuild_writer: MessageWriter<RebuildBird>,
-                             bird_state: Res<State<BirdState>>| {
-                                if *bird_state.get() == BirdState::BirdVisible {
-                                    bird_inputs.randomize_values();
-                                    rebuild_writer.write(RebuildBird);
-                                }
-                            }
-                        ),
-                    ),
-                    separator(),
-                    // Footer
-                    footer(asset_server),
-                ]
+                Text::new("SELECT BIRD"),
+                TextFont {
+                    font: asset_server.load("fonts/OTBrut-Regular.ttf"),
+                    font_size: 32.0,
+                    ..default()
+                },
+                TextColor(TEXT_COLOR),
             ),
             (
                 Node {
-                    flex_direction: FlexDirection::Column,
-                    padding: UiRect::axes(px(4), px(2)),
-                    margin: UiRect::axes(px(16), px(0)),
+                    display: Display::Flex,
+                    flex_direction: FlexDirection::Row,
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    padding: UiRect::horizontal(px(12)),
                     ..default()
                 },
                 children![
-                    // Prefer left bird
                     (
-                        pick_left_bird_button(asset_server),
+                        bird_selection_button(&asset_server, "left bird".to_string()),
                         observe(
                             |_activate: On<Activate>,
                              mut bird_inputs: ResMut<BirdGenInputs>,
                              recent_birds: Res<RecentBirds>,
                              mut rebuild_writer: MessageWriter<RebuildBird>,
-
                              bird_state: Res<State<BirdState>>| {
                                 if *bird_state.get() == BirdState::BirdVisible {
                                     // set bird inputs to be equal to left bird
@@ -265,18 +392,16 @@ fn ui_root(asset_server: &AssetServer) -> impl Bundle {
                             }
                         ),
                     ),
-                    // Nah that right bird is right tho
                     (
-                        pick_right_bird_button(asset_server),
+                        bird_selection_button(&asset_server, "right bird".to_string()),
                         observe(
                             |_activate: On<Activate>,
                              mut bird_inputs: ResMut<BirdGenInputs>,
                              recent_birds: Res<RecentBirds>,
                              mut rebuild_writer: MessageWriter<RebuildBird>,
-
                              bird_state: Res<State<BirdState>>| {
                                 if *bird_state.get() == BirdState::BirdVisible {
-                                    // set bird inputs to be equal to left bird
+                                    // set bird inputs to be equal to right bird
                                     bird_inputs.copy_from_other_bird(&recent_birds.right);
                                     rebuild_writer.write(RebuildBird);
                                 }
@@ -286,167 +411,30 @@ fn ui_root(asset_server: &AssetServer) -> impl Bundle {
                 ]
             ),
         ],
-    )
+    ));
 }
 
-fn _section_header(asset_server: &AssetServer, title: &str) -> impl Bundle {
-    (
-        Text::new(title),
-        TextFont {
-            font: asset_server.load("fonts/OTBrut-Regular.ttf"),
-            font_size: 24.0,
-            ..default()
-        },
-        TextColor(TEXT_COLOR),
-        Node {
-            margin: UiRect::top(px(10)).with_bottom(px(4)),
-            ..default()
-        },
-    )
-}
-
-fn separator() -> impl Bundle {
+fn bird_action_button(asset_server: &AssetServer, text: String) -> impl Bundle {
     (
         Node {
-            width: Val::Percent(100.),
-            height: px(1.),
-            margin: UiRect::vertical(px(16.)),
-            ..default()
-        },
-        BackgroundColor(Color::srgb(0.3, 0.3, 0.3)),
-    )
-}
-
-const _SLIDER_HEIGHT_PX: f32 = 32.0;
-fn _slider<F>(
-    asset_server: &AssetServer,
-    update_fn: F,
-    input_type: BirdGenInputTypes,
-    min: f32,
-    max: f32,
-    value: f32,
-) -> impl Bundle
-where
-    F: Fn(&mut BirdGenInputs, f32) + Send + Sync + 'static,
-{
-    (
-        Node {
-            width: Val::Percent(100.),
-            flex_direction: FlexDirection::Column,
-            margin: UiRect::vertical(px(5.)),
-            min_height: px(LINE_HEIGHT),
-            max_height: px(LINE_HEIGHT),
-            ..default()
-        },
-        children![
-            AccessibilityNode(Accessible::new(Role::ListItem)),
-            // Label
-            (
-                Text::new(get_input_type_string(&input_type)),
-                TextFont {
-                    font: asset_server.load("fonts/OTBrut-Regular.ttf"),
-                    font_size: 16.0,
-                    ..default()
-                },
-                TextColor(TEXT_COLOR),
-                Node {
-                    margin: UiRect::bottom(px(3.)),
-                    ..default()
-                },
-            ),
-            // Slider
-            (
-                (
-                    Node {
-                        display: Display::Flex,
-                        flex_direction: FlexDirection::Column,
-                        justify_content: JustifyContent::Center,
-                        align_items: AlignItems::Stretch,
-                        height: px(_SLIDER_HEIGHT_PX),
-                        width: Val::Percent(100.),
-                        ..default()
-                    },
-                    Hovered::default(),
-                    BirdInputSlider { input_type },
-                    Slider {
-                        track_click: TrackClick::Snap,
-                    },
-                    SliderValue(value),
-                    SliderRange::new(min, max),
-                    children![
-                        // Slider background rail
-                        (
-                            Node {
-                                height: px(_SLIDER_HEIGHT_PX - 8.0),
-                                ..default()
-                            },
-                            BackgroundColor(_SLIDER_TRACK),
-                            BorderRadius::all(px(3.)),
-                        ),
-                        // Invisible track for thumb positioning
-                        (
-                            Node {
-                                display: Display::Flex,
-                                position_type: PositionType::Absolute,
-                                left: px(0.),
-                                right: px(12.),
-                                top: px(0.),
-                                bottom: px(0.),
-                                ..default()
-                            },
-                            children![
-                                // Thumb
-                                (
-                                    SliderThumb,
-                                    Node {
-                                        display: Display::Flex,
-                                        width: px(_SLIDER_HEIGHT_PX),
-                                        height: px(_SLIDER_HEIGHT_PX),
-                                        position_type: PositionType::Absolute,
-                                        left: Val::Percent(0.),
-                                        top: px(-2),
-                                        ..default()
-                                    },
-                                    BorderRadius::all(px(6)),
-                                    BackgroundColor(SLIDER_THUMB),
-                                ),
-                            ],
-                        ),
-                    ],
-                ),
-                observe(
-                    move |value_change: On<ValueChange<f32>>,
-                          mut bird_inputs: ResMut<BirdGenInputs>| {
-                        update_fn(&mut bird_inputs, value_change.value);
-                    }
-                ),
-            ),
-        ],
-    )
-}
-
-fn regenerate_button(asset_server: &AssetServer) -> impl Bundle {
-    (
-        Node {
-            width: Val::Percent(100.),
+            max_width: vw(10),
             min_height: px(40.),
-            justify_content: JustifyContent::Center,
+            justify_content: JustifyContent::End,
             align_items: AlignItems::Center,
-            margin: UiRect::vertical(px(5.)),
-            padding: UiRect::axes(px(8.), px(16)),
-            border: UiRect::all(px(2.)),
+            margin: UiRect::bottom(px(2)),
+            padding: UiRect::axes(px(8.), px(0.)),
+            border: UiRect::bottom(px(4)),
             ..default()
         },
         Button,
-        RegenerateButton,
         Hovered::default(),
         BackgroundColor(NORMAL_BUTTON),
-        BorderColor::all(Color::BLACK),
-        BorderRadius::all(px(5.)),
+        BorderColor::all(NORMAL_BUTTON_BORDER),
+        BorderRadius::all(px(2.)),
         children![(
-            Text::new("new birds PLEASE"),
+            Text::new(text),
             TextFont {
-                font: asset_server.load("fonts/OTBrut-Regular.ttf"),
+                font: asset_server.load("fonts/PPMonumentCondensed-BoldItalic.ttf"),
                 font_size: 20.0,
                 ..default()
             },
@@ -455,119 +443,28 @@ fn regenerate_button(asset_server: &AssetServer) -> impl Bundle {
     )
 }
 
-fn randomize_birdseed_button(asset_server: &AssetServer) -> impl Bundle {
+fn bird_selection_button(asset_server: &AssetServer, text: String) -> impl Bundle {
     (
         Node {
-            width: Val::Percent(100.),
-            min_height: px(40.),
-            justify_content: JustifyContent::Center,
+            max_width: vw(30),
+            min_height: px(60.),
+            justify_content: JustifyContent::End,
             align_items: AlignItems::Center,
-            margin: UiRect::vertical(px(5.)),
-            padding: UiRect::axes(px(8.), px(16)),
-            border: UiRect::all(px(2.)),
+            margin: UiRect::horizontal(px(4)),
+            padding: UiRect::axes(px(12.), px(16.)),
+            border: UiRect::bottom(px(4)),
             ..default()
         },
         Button,
-        RegenerateButton,
         Hovered::default(),
         BackgroundColor(NORMAL_BUTTON),
-        BorderColor::all(Color::BLACK),
-        BorderRadius::all(px(5.)),
+        BorderColor::all(NORMAL_BUTTON_BORDER),
+        BorderRadius::all(px(2.)),
         children![(
-            Text::new("slop up the bird"),
+            Text::new(text),
             TextFont {
-                font: asset_server.load("fonts/OTBrut-Regular.ttf"),
-                font_size: 20.0,
-                ..default()
-            },
-            TextColor(TEXT_COLOR),
-        )],
-    )
-}
-
-fn pick_left_bird_button(asset_server: &AssetServer) -> impl Bundle {
-    (
-        Node {
-            width: Val::Percent(100.),
-            min_height: px(40.),
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            margin: UiRect::vertical(px(5.)),
-            padding: UiRect::axes(px(8.), px(16)),
-            border: UiRect::all(px(2.)),
-            ..default()
-        },
-        Button,
-        RegenerateButton,
-        Hovered::default(),
-        BackgroundColor(NORMAL_BUTTON),
-        BorderColor::all(Color::BLACK),
-        BorderRadius::all(px(5.)),
-        children![(
-            Text::new("left is better"),
-            TextFont {
-                font: asset_server.load("fonts/OTBrut-Regular.ttf"),
-                font_size: 20.0,
-                ..default()
-            },
-            TextColor(TEXT_COLOR),
-        )],
-    )
-}
-
-fn pick_right_bird_button(asset_server: &AssetServer) -> impl Bundle {
-    (
-        Node {
-            width: Val::Percent(100.),
-            min_height: px(40.),
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            margin: UiRect::vertical(px(5.)),
-            padding: UiRect::axes(px(8.), px(16)),
-            border: UiRect::all(px(2.)),
-            ..default()
-        },
-        Button,
-        RegenerateButton,
-        Hovered::default(),
-        BackgroundColor(NORMAL_BUTTON),
-        BorderColor::all(Color::BLACK),
-        BorderRadius::all(px(5.)),
-        children![(
-            Text::new("right is better"),
-            TextFont {
-                font: asset_server.load("fonts/OTBrut-Regular.ttf"),
-                font_size: 20.0,
-                ..default()
-            },
-            TextColor(TEXT_COLOR),
-        )],
-    )
-}
-
-fn _stl_button(asset_server: &AssetServer) -> impl Bundle {
-    (
-        Node {
-            width: Val::Percent(100.),
-            min_height: px(40.),
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            margin: UiRect::vertical(px(5.)),
-            padding: UiRect::axes(px(8.), px(16)),
-            border: UiRect::all(px(2.)),
-            ..default()
-        },
-        Button,
-        STLButton,
-        Hovered::default(),
-        BackgroundColor(NORMAL_BUTTON),
-        BorderColor::all(Color::BLACK),
-        BorderRadius::all(px(5.)),
-        children![(
-            Text::new("Copy bird STL"),
-            TextFont {
-                font: asset_server.load("fonts/OTBrut-Regular.ttf"),
-                font_size: 20.0,
+                font: asset_server.load("fonts/PPMonumentCondensed-BoldItalic.ttf"),
+                font_size: 24.0,
                 ..default()
             },
             TextColor(TEXT_COLOR),
@@ -577,13 +474,13 @@ fn _stl_button(asset_server: &AssetServer) -> impl Bundle {
 
 fn footer(asset_server: &AssetServer) -> impl Bundle {
     (
-        Text::new("ported/inspired by bird-o-matic by mooncactus"),
+        Text::new("inspired by the OpenSCAD script 'bird-o-matic' by mooncactus"),
         TextFont {
             font: asset_server.load("fonts/OTBrut-Regular.ttf"),
             font_size: 12.0,
             ..default()
         },
-        TextColor(Color::srgb(0.6, 0.6, 0.6)),
+        TextColor(Color::srgb(0.8, 0.85, 0.9)),
         Node {
             margin: UiRect::top(px(10.)),
             ..default()
@@ -601,11 +498,7 @@ fn update_button_style(
         ),
         (
             Or<(Changed<Hovered>, Added<InteractionDisabled>)>,
-            Or<(
-                With<RegenerateButton>,
-                With<RandomizeButton>,
-                With<STLButton>,
-            )>,
+            Or<(With<Button>,)>,
         ),
     >,
 ) {
@@ -622,11 +515,7 @@ fn update_button_style2(
             &mut BackgroundColor,
             &mut BorderColor,
         ),
-        Or<(
-            With<RegenerateButton>,
-            With<RandomizeButton>,
-            With<STLButton>,
-        )>,
+        Or<(With<Button>,)>,
     >,
     mut removed_disabled: RemovedComponents<InteractionDisabled>,
 ) {
@@ -646,103 +535,15 @@ fn set_button_style(
     match (disabled, hovered) {
         (true, _) => {
             *color = NORMAL_BUTTON.into();
-            border_color.set_all(GRAY);
+            border_color.set_all(NORMAL_BUTTON_BORDER);
         }
         (false, true) => {
             *color = HOVERED_BUTTON.into();
-            border_color.set_all(WHITE);
+            border_color.set_all(HOVERED_BUTTON_BORDER);
         }
         (false, false) => {
             *color = NORMAL_BUTTON.into();
-            border_color.set_all(BLACK);
+            border_color.set_all(NORMAL_BUTTON_BORDER);
         }
-    }
-}
-
-fn update_slider_styles(
-    sliders: Query<
-        (
-            Entity,
-            &SliderValue,
-            &SliderRange,
-            &Hovered,
-            &CoreSliderDragState,
-            Has<InteractionDisabled>,
-        ),
-        (
-            Or<(
-                Changed<SliderValue>,
-                Changed<SliderRange>,
-                Changed<Hovered>,
-                Changed<CoreSliderDragState>,
-                Added<InteractionDisabled>,
-            )>,
-            With<Slider>,
-        ),
-    >,
-    children: Query<&Children>,
-    mut thumbs: Query<(&mut Node, &mut BackgroundColor, Has<SliderThumb>), Without<Slider>>,
-) {
-    for (slider_ent, value, range, hovered, drag_state, disabled) in sliders.iter() {
-        for child in children.iter_descendants(slider_ent) {
-            if let Ok((mut thumb_node, mut thumb_bg, is_thumb)) = thumbs.get_mut(child)
-                && is_thumb
-            {
-                thumb_node.left = Val::Percent(range.thumb_position(value.0) * 100.0);
-                thumb_bg.0 = thumb_color(disabled, hovered.0 || drag_state.dragging);
-            }
-        }
-    }
-}
-
-fn update_slider_styles2(
-    sliders: Query<
-        (
-            Entity,
-            &Hovered,
-            &CoreSliderDragState,
-            Has<InteractionDisabled>,
-        ),
-        With<Slider>,
-    >,
-    children: Query<&Children>,
-    mut thumbs: Query<(&mut BackgroundColor, Has<SliderThumb>), Without<Slider>>,
-    mut removed_disabled: RemovedComponents<InteractionDisabled>,
-) {
-    removed_disabled.read().for_each(|entity| {
-        if let Ok((slider_ent, hovered, drag_state, disabled)) = sliders.get(entity) {
-            for child in children.iter_descendants(slider_ent) {
-                if let Ok((mut thumb_bg, is_thumb)) = thumbs.get_mut(child)
-                    && is_thumb
-                {
-                    thumb_bg.0 = thumb_color(disabled, hovered.0 || drag_state.dragging);
-                }
-            }
-        }
-    });
-}
-
-fn update_slider_values(
-    res: Res<BirdGenInputs>,
-    mut sliders: Query<(Entity, &BirdInputSlider)>,
-    mut commands: Commands,
-) {
-    if res.is_changed() {
-        for (slider_ent, bird_slider) in sliders.iter_mut() {
-            commands
-                .entity(slider_ent)
-                .insert(SliderValue(get_input_value_for_type(
-                    &bird_slider.input_type,
-                    &res,
-                )));
-        }
-    }
-}
-
-fn thumb_color(disabled: bool, hovered: bool) -> Color {
-    match (disabled, hovered) {
-        (true, _) => Color::srgb(0.5, 0.5, 0.5),
-        (false, true) => SLIDER_THUMB.lighter(0.3),
-        _ => SLIDER_THUMB,
     }
 }

@@ -89,63 +89,6 @@ pub enum BirdGenInputTypes {
     BaseFlat,
 }
 
-pub fn get_input_type_string(input_type: &BirdGenInputTypes) -> &str {
-    match input_type {
-        BirdGenInputTypes::BeakLength => "Beak Length",
-        BirdGenInputTypes::BeakSize => "Beak Size",
-        BirdGenInputTypes::BeakWidth => "Beak Width",
-        BirdGenInputTypes::BeakRoundness => "Beak Roundness",
-        BirdGenInputTypes::HeadSize => "Head Size",
-        BirdGenInputTypes::HeadToBelly => "Head to Belly",
-        BirdGenInputTypes::EyeSize => "Eye Size",
-        BirdGenInputTypes::HeadLateralOffset => "Head Lateral Offset",
-        BirdGenInputTypes::HeadLevel => "Head Level",
-        BirdGenInputTypes::HeadYaw => "Head Yaw",
-        BirdGenInputTypes::HeadPitch => "Head Pitch",
-        BirdGenInputTypes::BellyLength => "Belly Length",
-        BirdGenInputTypes::BellySize => "Belly Size",
-        BirdGenInputTypes::BellyFat => "Belly Fat",
-        BirdGenInputTypes::BellyToBottom => "Belly to Bottom",
-        BirdGenInputTypes::BottomSize => "Bottom Size",
-        BirdGenInputTypes::TailLength => "Tail Length",
-        BirdGenInputTypes::TailWidth => "Tail Width",
-        BirdGenInputTypes::TailYaw => "Tail Yaw",
-        BirdGenInputTypes::TailPitch => "Tail Pitch",
-        BirdGenInputTypes::TailRoundness => "Tail Roundness",
-        BirdGenInputTypes::BaseFlat => "Base Flat",
-    }
-}
-
-pub fn get_input_value_for_type(
-    input_type: &BirdGenInputTypes,
-    input_values: &BirdGenInputs,
-) -> f32 {
-    match input_type {
-        BirdGenInputTypes::BeakLength => input_values.beak_length,
-        BirdGenInputTypes::BeakSize => input_values.beak_size,
-        BirdGenInputTypes::BeakWidth => input_values.beak_width,
-        BirdGenInputTypes::BeakRoundness => input_values.beak_roundness,
-        BirdGenInputTypes::HeadSize => input_values.head_size,
-        BirdGenInputTypes::HeadToBelly => input_values.head_to_belly,
-        BirdGenInputTypes::EyeSize => input_values.eye_size,
-        BirdGenInputTypes::HeadLateralOffset => input_values.head_lateral_offset,
-        BirdGenInputTypes::HeadLevel => input_values.head_level,
-        BirdGenInputTypes::HeadYaw => input_values.head_yaw,
-        BirdGenInputTypes::HeadPitch => input_values.head_pitch,
-        BirdGenInputTypes::BellyLength => input_values.belly_length,
-        BirdGenInputTypes::BellySize => input_values.belly_size,
-        BirdGenInputTypes::BellyFat => input_values.belly_fat,
-        BirdGenInputTypes::BellyToBottom => input_values.belly_to_bottom,
-        BirdGenInputTypes::BottomSize => input_values.bottom_size,
-        BirdGenInputTypes::TailLength => input_values.tail_length,
-        BirdGenInputTypes::TailWidth => input_values.tail_width,
-        BirdGenInputTypes::TailYaw => input_values.tail_yaw,
-        BirdGenInputTypes::TailPitch => input_values.tail_pitch,
-        BirdGenInputTypes::TailRoundness => input_values.tail_roundness,
-        BirdGenInputTypes::BaseFlat => input_values.base_flat,
-    }
-}
-
 impl Default for BirdGenInputs {
     fn default() -> Self {
         BirdGenInputs {
@@ -535,35 +478,6 @@ pub fn generate_bird_body_mesh(input: &BirdGenInputs) -> Mesh {
     let body = generate_bird_body_csg_mesh(input);
     // add the x axis rotation to account for y up world we're rocking with in bevy
     body.rotate(-90.0, 180.0, 0.0).to_bevy_mesh()
-}
-
-pub fn generate_full_bird_stl_string(input: &BirdGenInputs) -> String {
-    let body = generate_bird_body_csg_mesh(input);
-    let head_in_place = generate_bird_head_csg_mesh(input);
-
-    info!("Generate STL strings, then combine");
-    let body_stl_str = body.to_stl_ascii("bird");
-    let head_stl_str = head_in_place.to_stl_ascii("just_head");
-    // grab triangles from head and add to body
-    {
-        let mut result = body_stl_str.clone();
-
-        // Remove the "endsolid" line from body
-        if let Some(pos) = result.rfind("endsolid") {
-            result.truncate(pos);
-        }
-
-        // Extract facets from head (between "solid" line and "endsolid" line)
-        let facets_start = head_stl_str.find("facet").unwrap_or(head_stl_str.len());
-        let facets_end = head_stl_str.rfind("endsolid").unwrap_or(head_stl_str.len());
-        let head_facets = &head_stl_str[facets_start..facets_end];
-
-        // Combine: body (without endsolid) + head facets + endsolid
-        result.push_str(head_facets);
-        result.push_str("endsolid bird\n");
-
-        result
-    }
 }
 
 /* From https://www.thingiverse.com/thing:139945/files
