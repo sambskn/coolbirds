@@ -26,6 +26,9 @@ const HOVERED_BUTTON_BORDER: Color = Color::Srgba(Srgba {
 });
 const TEXT_COLOR: Color = Color::srgb(0.9, 0.9, 0.9);
 
+const FONT_PATH_OT_BRUT_REGULAR: &str = "fonts/OTBrut-Regular.ttf";
+const FONT_PATH_ACMA_BOLD: &str = "fonts/PPAcma-Bold.ttf";
+
 pub struct BirdUIPlugin;
 impl Plugin for BirdUIPlugin {
     fn build(&self, app: &mut App) {
@@ -159,7 +162,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                     (
                         Text::new("bird-o-matic"),
                         TextFont {
-                            font: asset_server.load("fonts/OTBrut-Regular.ttf"),
+                            font: asset_server.load(FONT_PATH_OT_BRUT_REGULAR),
                             font_size: 18.0,
                             ..default()
                         },
@@ -168,7 +171,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                     (
                         Text::new("v0.2.0"),
                         TextFont {
-                            font: asset_server.load("fonts/OTBrut-Regular.ttf"),
+                            font: asset_server.load(FONT_PATH_OT_BRUT_REGULAR),
                             font_size: 12.0,
                             ..default()
                         },
@@ -203,7 +206,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
             Text::new("SEED BIRD"),
             TextFont {
-                font: asset_server.load("fonts/OTBrut-Regular.ttf"),
+                font: asset_server.load(FONT_PATH_OT_BRUT_REGULAR),
                 font_size: 32.0,
                 ..default()
             },
@@ -221,7 +224,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
             Text::new("bird of origin, it's 'genome' will be mixed with algorithm-provided birds to create new progeny"),
             TextFont {
-                font: asset_server.load("fonts/OTBrut-Regular.ttf"),
+                font: asset_server.load(FONT_PATH_OT_BRUT_REGULAR),
                 font_size: 12.0,
                 ..default()
             },
@@ -293,7 +296,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
             Text::new("LEFT"),
             TextFont {
-                font: asset_server.load("fonts/OTBrut-Regular.ttf"),
+                font: asset_server.load(FONT_PATH_OT_BRUT_REGULAR),
                 font_size: 32.0,
                 ..default()
             },
@@ -325,7 +328,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
             Text::new("RIGHT"),
             TextFont {
-                font: asset_server.load("fonts/OTBrut-Regular.ttf"),
+                font: asset_server.load(FONT_PATH_OT_BRUT_REGULAR),
                 font_size: 32.0,
                 ..default()
             },
@@ -360,7 +363,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                 },
                 Text::new("SELECT BIRD"),
                 TextFont {
-                    font: asset_server.load("fonts/OTBrut-Regular.ttf"),
+                    font: asset_server.load(FONT_PATH_OT_BRUT_REGULAR),
                     font_size: 32.0,
                     ..default()
                 },
@@ -434,7 +437,7 @@ fn bird_action_button(asset_server: &AssetServer, text: String) -> impl Bundle {
         children![(
             Text::new(text),
             TextFont {
-                font: asset_server.load("fonts/PPMonumentCondensed-BoldItalic.ttf"),
+                font: asset_server.load(FONT_PATH_ACMA_BOLD),
                 font_size: 20.0,
                 ..default()
             },
@@ -463,7 +466,7 @@ fn bird_selection_button(asset_server: &AssetServer, text: String) -> impl Bundl
         children![(
             Text::new(text),
             TextFont {
-                font: asset_server.load("fonts/PPMonumentCondensed-BoldItalic.ttf"),
+                font: asset_server.load(FONT_PATH_ACMA_BOLD),
                 font_size: 24.0,
                 ..default()
             },
@@ -476,7 +479,7 @@ fn footer(asset_server: &AssetServer) -> impl Bundle {
     (
         Text::new("inspired by the OpenSCAD script 'bird-o-matic' by mooncactus"),
         TextFont {
-            font: asset_server.load("fonts/OTBrut-Regular.ttf"),
+            font: asset_server.load(FONT_PATH_OT_BRUT_REGULAR),
             font_size: 12.0,
             ..default()
         },
