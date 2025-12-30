@@ -237,7 +237,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         Node {
             position_type: PositionType::Absolute,
-            top: px(32),
+            top: px(20),
             right: vw(50),
             max_width: vw(45),
             padding: UiRect {
@@ -392,7 +392,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         Node {
             position_type: PositionType::Absolute,
-            bottom: vh(5),
+            bottom: vh(12),
             height: vh(40),
             left: vw(35),
             right: vw(35),
@@ -490,7 +490,7 @@ fn bird_action_button(asset_server: &AssetServer, text: String) -> impl Bundle {
             Text::new(text),
             TextFont {
                 font: asset_server.load(FONT_PATH_ACMA_BOLD),
-                font_size: 20.0,
+                font_size: 18.0,
                 ..default()
             },
             TextColor(TEXT_COLOR),
@@ -519,7 +519,7 @@ fn bird_selection_button(asset_server: &AssetServer, text: String) -> impl Bundl
             Text::new(text),
             TextFont {
                 font: asset_server.load(FONT_PATH_ACMA_BOLD),
-                font_size: 24.0,
+                font_size: 26.0,
                 ..default()
             },
             TextColor(TEXT_COLOR),
