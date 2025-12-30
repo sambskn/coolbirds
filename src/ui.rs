@@ -171,7 +171,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                         TextColor(TEXT_COLOR),
                     ),
                     (
-                        Text::new("v0.2.0"),
+                        Text::new("v0.2.1"),
                         TextFont {
                             font: asset_server.load(FONT_PATH_OT_BRUT_REGULAR),
                             font_size: 12.0,
