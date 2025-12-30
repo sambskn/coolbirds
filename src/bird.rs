@@ -1,7 +1,6 @@
 use bevy::{ecs::resource::Resource, mesh::Mesh};
 use csgrs::{mesh::plane::Plane, traits::CSG};
 type CSGMesh = csgrs::mesh::Mesh<()>;
-use bevy::log::info;
 
 // Inputs/descriptions copied from original Bird-o-matic .SCAD script (see referenced script at bottom of file)
 // [Ed. note: Made em all f32's for now]
@@ -278,6 +277,132 @@ impl BirdGenInputs {
         // return child
         child
     }
+
+    pub fn get_bird_seed_string(&self) -> String {
+        let mouth_str = format!(
+            "m.{}.{}.{}.{}",
+            self.beak_length as i32,
+            self.beak_size as i32,
+            self.beak_width as i32,
+            self.beak_roundness as i32,
+        );
+        let head_str = format!(
+            "h.{}.{}.{}.{}.{}.{}.{}",
+            self.head_size as i32,
+            self.head_to_belly as i32,
+            self.eye_size as i32,
+            self.head_lateral_offset as i32,
+            self.head_level as i32,
+            self.head_yaw as i32,
+            self.head_pitch as i32,
+        );
+        let belly_str = format!(
+            "b.{}.{}.{}.{}.{}",
+            self.belly_length as i32,
+            self.belly_size as i32,
+            self.belly_fat as i32,
+            self.belly_to_bottom as i32,
+            self.bottom_size as i32,
+        );
+        let tail_str = format!(
+            "t.{}.{}.{}.{}.{}",
+            self.tail_length as i32,
+            self.tail_width as i32,
+            self.tail_yaw as i32,
+            self.tail_pitch as i32,
+            self.tail_roundness as i32,
+        );
+        let cutoff_str = format!("c.{}", self.base_flat as i32,);
+        format!("{mouth_str}.{head_str}.{belly_str}.{tail_str}.{cutoff_str}")
+    }
+
+    pub fn update_from_seed_string(&mut self, seed: String) -> Result<(), String> {
+        let parts: Vec<&str> = seed.split('.').collect();
+
+        // Find section indices by looking for the prefixes
+        let mut section_indices = Vec::new();
+        for (i, part) in parts.iter().enumerate() {
+            if matches!(*part, "m" | "h" | "b" | "t" | "c") {
+                section_indices.push(i);
+            }
+        }
+
+        // Add end index for easier slicing
+        section_indices.push(parts.len());
+
+        // Helper to parse section
+        let parse_section = |start: usize, end: usize| -> Result<Vec<f32>, String> {
+            parts[start + 1..end]
+                .iter()
+                .map(|s| {
+                    s.parse::<f32>()
+                        .map_err(|_| format!("Failed to parse: {}", s))
+                })
+                .collect()
+        };
+
+        // Parse each section
+        for i in 0..section_indices.len() - 1 {
+            let section_start = section_indices[i];
+            let section_end = section_indices[i + 1];
+            let prefix = parts[section_start];
+
+            let values = parse_section(section_start, section_end)?;
+
+            match prefix {
+                "m" => {
+                    if values.len() != 4 {
+                        return Err(format!("Expected 4 mouth values, got {}", values.len()));
+                    }
+                    self.beak_length = values[0];
+                    self.beak_size = values[1];
+                    self.beak_width = values[2];
+                    self.beak_roundness = values[3];
+                }
+                "h" => {
+                    if values.len() != 7 {
+                        return Err(format!("Expected 7 head values, got {}", values.len()));
+                    }
+                    self.head_size = values[0];
+                    self.head_to_belly = values[1];
+                    self.eye_size = values[2];
+                    self.head_lateral_offset = values[3];
+                    self.head_level = values[4];
+                    self.head_yaw = values[5];
+                    self.head_pitch = values[6];
+                }
+                "b" => {
+                    if values.len() != 5 {
+                        return Err(format!("Expected 5 belly values, got {}", values.len()));
+                    }
+                    self.belly_length = values[0];
+                    self.belly_size = values[1];
+                    self.belly_fat = values[2];
+                    self.belly_to_bottom = values[3];
+                    self.bottom_size = values[4];
+                }
+                "t" => {
+                    if values.len() != 5 {
+                        return Err(format!("Expected 5 tail values, got {}", values.len()));
+                    }
+                    self.tail_length = values[0];
+                    self.tail_width = values[1];
+                    self.tail_yaw = values[2];
+                    self.tail_pitch = values[3];
+                    self.tail_roundness = values[4];
+                }
+                "c" => {
+                    if values.len() != 1 {
+                        return Err(format!("Expected 1 cutoff value, got {}", values.len()));
+                    }
+                    self.base_flat = values[0];
+                }
+                _ => return Err(format!("Unknown section prefix: {}", prefix)),
+            }
+        }
+
+        Ok(())
+    }
 }
 
 // Bumping to 40 made my computer sad :(
@@ -303,9 +428,7 @@ fn generate_bird_head_csg_mesh(input: &BirdGenInputs) -> CSGMesh {
         SPHERE_STACKS,
         None,
     );
-    info!("Skull done");
     // beak
-    info!("Making the beak");
     let mut beak_skeleton: CSGMesh = CSGMesh::cylinder(
         if input.beak_width > 0.0 {
             input.beak_width as f64
@@ -325,7 +448,6 @@ fn generate_bird_head_csg_mesh(input: &BirdGenInputs) -> CSGMesh {
     .rotate(0.0, 15.0, 0.0)
     .union(&skull.clone());
     beak_skeleton.renormalize();
-    info!("Beak skelton done");
     let mut beak = beak_skeleton.convex_hull().scale(
         1.0,
         input.beak_size as f64 / 100.0,
@@ -338,7 +460,6 @@ fn generate_bird_head_csg_mesh(input: &BirdGenInputs) -> CSGMesh {
     // eyes
     if input.eye_size > 0.0 {
         for y in [-1.0, 1.0] {
-            info!("Making eye");
             let eye: CSGMesh = CSGMesh::sphere(
                 input.eye_size as f64 / 2.0,
                 // half resolution sphere compared to skull
@@ -354,7 +475,6 @@ fn generate_bird_head_csg_mesh(input: &BirdGenInputs) -> CSGMesh {
             )
             .rotate(50.0, -40.0, 0.0);
             // .scale(1.0, y, 1.0);
-            info!("Put eye on head");
             if y == -1.0 {
                 // flip one eye across y plane
                 let plane_y = Plane::from_normal([0.0, 1.0, 0.0].into(), 0.0);
@@ -388,7 +508,6 @@ pub fn generate_bird_head_mesh(input: &BirdGenInputs) -> Mesh {
 }
 
 pub fn generate_bird_body_csg_mesh(input: &BirdGenInputs) -> CSGMesh {
-    info!("Body step 1, neck and chest");
     let neck = CSGMesh::sphere(
         input.head_size as f64 / 2.0,
         SPHERE_SEGMENTS / 2 + 1,
@@ -413,7 +532,6 @@ pub fn generate_bird_body_csg_mesh(input: &BirdGenInputs) -> CSGMesh {
     )
     .translate(input.head_to_belly as f64, 0.0, 0.0);
     let mut body = neck.union(&chest).convex_hull();
-    info!("Body step 2, bottom");
     let bottom = CSGMesh::sphere(
         input.bottom_size as f64 / 2.0,
         SPHERE_SEGMENTS + 1,
@@ -427,7 +545,6 @@ pub fn generate_bird_body_csg_mesh(input: &BirdGenInputs) -> CSGMesh {
     );
     let body_plus_bottom = body.union(&bottom).convex_hull();
     body = body_plus_bottom;
-    info!("Body step 3, tail");
     let tail = CSGMesh::cylinder(
         input.tail_width as f64,
         NONZERO_THICKNESS,
@@ -445,10 +562,8 @@ pub fn generate_bird_body_csg_mesh(input: &BirdGenInputs) -> CSGMesh {
     let body_plus_tail = body.union(&tail).convex_hull();
     body = body_plus_tail;
     body.renormalize();
-    info!("Body done");
 
     if input.base_flat > -100.0 {
-        info!("Flattening base");
         let total_len =
             input.beak_length + input.head_to_belly + input.belly_to_bottom + input.tail_length;
 

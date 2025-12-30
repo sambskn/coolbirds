@@ -80,7 +80,6 @@ fn handle_bird_rebuild(
 ) {
     for _event in bird_rebuild_reader.read() {
         for bird_mesh_entity in bird_mesh_query.iter() {
-            info!("bird mesh kill");
             commands.entity(bird_mesh_entity).despawn();
         }
         next_bird_state.set(BirdState::Loading);
@@ -141,7 +140,6 @@ fn spawn_bird_mesh(
     mut recent_birds: ResMut<RecentBirds>,
     bird_inputs: Res<BirdGenInputs>,
 ) {
-    info!("time to spawn bird");
     let colors = get_colors(3);
     let left_bird_mat = materials.add(StandardMaterial {
         base_color: colors[0],

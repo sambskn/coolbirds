@@ -9,6 +9,7 @@ use bevy::{
     ui::InteractionDisabled,
     ui_widgets::{Activate, Button, UiWidgetsPlugins, observe},
 };
+use bevy_mod_clipboard::{Clipboard, ClipboardRead};
 
 const NORMAL_BUTTON: Color = Color::srgba(0.15, 0.15, 0.15, 0.01);
 const HOVERED_BUTTON: Color = Color::srgba(0.25, 0.25, 0.25, 0.1);
@@ -252,9 +253,60 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         },
         children![
-            // TODO: implement these lol
-            // (bird_action_button(&asset_server, "copy".to_string())),
-            // (bird_action_button(&asset_server, "paste".to_string())),
+            (
+                bird_action_button(&asset_server, "copy".to_string()),
+                observe(
+                    |_activate: On<Activate>,
+                     mut clipboard: ResMut<Clipboard>,
+                     bird_inputs: Res<BirdGenInputs>,
+                     bird_state: Res<State<BirdState>>| {
+                        if *bird_state.get() == BirdState::BirdVisible {
+                            let bird_str = bird_inputs.get_bird_seed_string();
+                            clipboard
+                                .set_text(bird_str)
+                                .expect("Failed to get bird string");
+                        }
+                    }
+                )
+            ),
+            (
+                bird_action_button(&asset_server, "paste".to_string()),
+                observe(
+                    |_activate: On<Activate>,
+                     mut bird_inputs: ResMut<BirdGenInputs>,
+                     mut rebuild_writer: MessageWriter<RebuildBird>,
+                     mut maybe_read: Local<Option<ClipboardRead>>,
+                     mut clipboard: ResMut<Clipboard>,
+                     bird_state: Res<State<BirdState>>| {
+                        if *bird_state.get() == BirdState::BirdVisible {
+                            // If no clipboard read is pending, fetch any text
+                            if maybe_read.is_none() {
+                                // `fetch_text` completes instantly on windows and unix.
+                                // On wasm32 the result is fetched asynchronously, and the `ClipboardRead` needs to stored and polled
+                                // on following frames until a result is available.
+                                *maybe_read = Some(clipboard.fetch_text());
+                            }
+
+                            // Check if the clipboard read is complete and, if so, display its result.
+                            if let Some(read) = maybe_read.as_mut() {
+                                if let Some(contents) = read.poll_result() {
+                                    let clipboard_contents =
+                                        contents.unwrap_or_else(|e| format!("{e:?}"));
+                                    // Now actually update da bird??
+                                    match bird_inputs.update_from_seed_string(clipboard_contents) {
+                                        Ok(()) => {
+                                            info!("Bird updated successfully!");
+                                            rebuild_writer.write(RebuildBird);
+                                        }
+                                        Err(e) => info!("Error parsing seed: {}", e),
+                                    }
+                                    *maybe_read = None;
+                                }
+                            }
+                        }
+                    }
+                )
+            ),
             (
                 bird_action_button(&asset_server, "randomize".to_string()),
                 observe(
