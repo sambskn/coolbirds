@@ -1,5 +1,6 @@
 use crate::{
     bird::{BirdGenInputs, RecentBirds, generate_bird_body_mesh, generate_bird_head_mesh},
+    log_text::{LogTextPlugin, NewLog},
     ui::BirdUIPlugin,
 };
 use bevy::{
@@ -17,6 +18,7 @@ use bevy_mod_clipboard::ClipboardPlugin;
 use rand::seq::IndexedRandom;
 
 mod bird;
+mod log_text;
 mod ui;
 
 const BG_COLOR: Color = Color::srgb(0.47, 0.49, 0.68);
@@ -44,6 +46,7 @@ fn main() {
             }),
             ClipboardPlugin,
         ))
+        .add_plugins(LogTextPlugin)
         .add_plugins(InputDispatchPlugin)
         .add_plugins(TabNavigationPlugin)
         .add_message::<RebuildBird>()
@@ -77,8 +80,12 @@ fn handle_bird_rebuild(
     bird_mesh_query: Query<Entity, With<BirdMesh>>,
     mut commands: Commands,
     mut next_bird_state: ResMut<NextState<BirdState>>,
+    mut log_writer: MessageWriter<NewLog>,
 ) {
     for _event in bird_rebuild_reader.read() {
+        log_writer.write(NewLog {
+            text: "loading fresh birds".to_string(),
+        });
         for bird_mesh_entity in bird_mesh_query.iter() {
             commands.entity(bird_mesh_entity).despawn();
         }

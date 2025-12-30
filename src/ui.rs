@@ -1,6 +1,7 @@
 use crate::{
     BirdState, RebuildBird,
     bird::{BirdGenInputs, RecentBirds},
+    log_text::NewLog,
 };
 use bevy::{
     input::mouse::{MouseScrollUnit, MouseWheel},
@@ -25,10 +26,10 @@ const HOVERED_BUTTON_BORDER: Color = Color::Srgba(Srgba {
     blue: 0.9,
     alpha: 0.5,
 });
-const TEXT_COLOR: Color = Color::srgb(0.9, 0.9, 0.9);
+pub const TEXT_COLOR: Color = Color::srgb(0.9, 0.9, 0.9);
 
-const FONT_PATH_OT_BRUT_REGULAR: &str = "fonts/OTBrut-Regular.ttf";
-const FONT_PATH_ACMA_BOLD: &str = "fonts/PPAcma-Bold.ttf";
+pub const FONT_PATH_OT_BRUT_REGULAR: &str = "fonts/OTBrut-Regular.ttf";
+pub const FONT_PATH_ACMA_BOLD: &str = "fonts/PPAcma-Bold.ttf";
 
 pub struct BirdUIPlugin;
 impl Plugin for BirdUIPlugin {
@@ -259,12 +260,16 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                     |_activate: On<Activate>,
                      mut clipboard: ResMut<Clipboard>,
                      bird_inputs: Res<BirdGenInputs>,
-                     bird_state: Res<State<BirdState>>| {
+                     bird_state: Res<State<BirdState>>,
+                     mut log_writer: MessageWriter<NewLog>| {
                         if *bird_state.get() == BirdState::BirdVisible {
                             let bird_str = bird_inputs.get_bird_seed_string();
                             clipboard
-                                .set_text(bird_str)
+                                .set_text(bird_str.clone())
                                 .expect("Failed to get bird string");
+                            log_writer.write(NewLog {
+                                text: format!("copied bird seed to clipboard\n{}", bird_str),
+                            });
                         }
                     }
                 )
@@ -277,7 +282,8 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                      mut rebuild_writer: MessageWriter<RebuildBird>,
                      mut maybe_read: Local<Option<ClipboardRead>>,
                      mut clipboard: ResMut<Clipboard>,
-                     bird_state: Res<State<BirdState>>| {
+                     bird_state: Res<State<BirdState>>,
+                     mut log_writer: MessageWriter<NewLog>| {
                         if *bird_state.get() == BirdState::BirdVisible {
                             // If no clipboard read is pending, fetch any text
                             if maybe_read.is_none() {
@@ -293,12 +299,25 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                                     let clipboard_contents =
                                         contents.unwrap_or_else(|e| format!("{e:?}"));
                                     // Now actually update da bird??
-                                    match bird_inputs.update_from_seed_string(clipboard_contents) {
+                                    match bird_inputs
+                                        .update_from_seed_string(clipboard_contents.clone())
+                                    {
                                         Ok(()) => {
+                                            log_writer.write(NewLog {
+                                                text: format!(
+                                                    "loaded bird seed from clipboard\n{}",
+                                                    clipboard_contents.clone()
+                                                ),
+                                            });
                                             info!("Bird updated successfully!");
                                             rebuild_writer.write(RebuildBird);
                                         }
-                                        Err(e) => info!("Error parsing seed: {}", e),
+                                        Err(e) => {
+                                            info!("Error parsing seed: {}", e);
+                                            log_writer.write(NewLog {
+                                                text: "oof that didn't work".to_string(),
+                                            });
+                                        }
                                     }
                                     *maybe_read = None;
                                 }
