@@ -1,5 +1,5 @@
 use crate::{
-    BirdState, RebuildBird,
+    BG_COLOR, BirdState, RebuildBird,
     bird::{BirdGenInputs, RecentBirds},
     log_text::NewLog,
 };
@@ -12,24 +12,14 @@ use bevy::{
 };
 use bevy_mod_clipboard::{Clipboard, ClipboardRead};
 
-const NORMAL_BUTTON: Color = Color::srgba(0.15, 0.15, 0.15, 0.01);
-const HOVERED_BUTTON: Color = Color::srgba(0.25, 0.25, 0.25, 0.1);
-const NORMAL_BUTTON_BORDER: Color = Color::Srgba(Srgba {
-    red: 0.02,
-    green: 0.12,
-    blue: 0.33,
-    alpha: 0.1,
-});
-const HOVERED_BUTTON_BORDER: Color = Color::Srgba(Srgba {
-    red: 0.9,
-    green: 0.92,
-    blue: 0.9,
-    alpha: 0.5,
-});
+const NORMAL_BUTTON: Color = Color::srgba(0., 0., 0., 0.00);
+const HOVERED_BUTTON: Color = Color::srgba(1.0, 1.0, 1.0, 0.95);
 pub const TEXT_COLOR: Color = Color::srgb(0.9, 0.9, 0.9);
+const HOVERED_TEXT_COLOR: Color = BG_COLOR;
+const DISABLED_TEXT_COLOR: Color = Color::srgba(0.7, 0.8, 0.85, 0.7);
 
 pub const FONT_PATH_OT_BRUT_REGULAR: &str = "fonts/OTBrut-Regular.ttf";
-pub const FONT_PATH_ACMA_BOLD: &str = "fonts/PPAcma-Bold.ttf";
+pub const FONT_PATH_MONTREAL: &str = "fonts/OTNeueMontreal-BoldItalicSqueezed.ttf";
 
 pub struct BirdUIPlugin;
 impl Plugin for BirdUIPlugin {
@@ -42,6 +32,7 @@ impl Plugin for BirdUIPlugin {
                     send_scroll_events,
                     update_button_style,
                     update_button_style2,
+                    update_button_text_style,
                 ),
             )
             .add_observer(on_scroll_handler);
@@ -503,13 +494,12 @@ fn bird_action_button(asset_server: &AssetServer, text: String) -> impl Bundle {
         Button,
         Hovered::default(),
         BackgroundColor(NORMAL_BUTTON),
-        BorderColor::all(NORMAL_BUTTON_BORDER),
-        BorderRadius::all(px(2.)),
         children![(
+            Hovered::default(),
             Text::new(text),
             TextFont {
-                font: asset_server.load(FONT_PATH_ACMA_BOLD),
-                font_size: 18.0,
+                font: asset_server.load(FONT_PATH_MONTREAL),
+                font_size: 26.0,
                 ..default()
             },
             TextColor(TEXT_COLOR),
@@ -532,12 +522,11 @@ fn bird_selection_button(asset_server: &AssetServer, text: String) -> impl Bundl
         Button,
         Hovered::default(),
         BackgroundColor(NORMAL_BUTTON),
-        BorderColor::all(NORMAL_BUTTON_BORDER),
-        BorderRadius::all(px(2.)),
         children![(
+            Hovered::default(),
             Text::new(text),
             TextFont {
-                font: asset_server.load(FONT_PATH_ACMA_BOLD),
+                font: asset_server.load(FONT_PATH_MONTREAL),
                 font_size: 26.0,
                 ..default()
             },
@@ -564,60 +553,60 @@ fn footer(asset_server: &AssetServer) -> impl Bundle {
 
 fn update_button_style(
     mut buttons: Query<
-        (
-            &Hovered,
-            Has<InteractionDisabled>,
-            &mut BackgroundColor,
-            &mut BorderColor,
-        ),
+        (&Hovered, Has<InteractionDisabled>, &mut BackgroundColor),
         (
             Or<(Changed<Hovered>, Added<InteractionDisabled>)>,
             Or<(With<Button>,)>,
         ),
     >,
 ) {
-    for (hovered, disabled, mut color, mut border_color) in &mut buttons {
-        set_button_style(disabled, hovered.get(), &mut color, &mut border_color);
+    for (hovered, disabled, mut color) in &mut buttons {
+        set_button_style(disabled, hovered.get(), &mut color);
     }
 }
 
 fn update_button_style2(
     mut buttons: Query<
-        (
-            &Hovered,
-            Has<InteractionDisabled>,
-            &mut BackgroundColor,
-            &mut BorderColor,
-        ),
+        (&Hovered, Has<InteractionDisabled>, &mut BackgroundColor),
         Or<(With<Button>,)>,
     >,
     mut removed_disabled: RemovedComponents<InteractionDisabled>,
 ) {
     removed_disabled.read().for_each(|entity| {
-        if let Ok((hovered, disabled, mut color, mut border_color)) = buttons.get_mut(entity) {
-            set_button_style(disabled, hovered.get(), &mut color, &mut border_color);
+        if let Ok((hovered, disabled, mut color)) = buttons.get_mut(entity) {
+            set_button_style(disabled, hovered.get(), &mut color);
         }
     });
 }
 
-fn set_button_style(
-    disabled: bool,
-    hovered: bool,
-    color: &mut BackgroundColor,
-    border_color: &mut BorderColor,
+fn update_button_text_style(
+    mut texts: Query<(&Hovered, Has<InteractionDisabled>, &mut TextColor)>,
 ) {
+    for (hovered, disabled, mut text_color) in &mut texts {
+        match (disabled, hovered.0) {
+            (true, _) => {
+                text_color.0 = DISABLED_TEXT_COLOR;
+            }
+            (false, true) => {
+                text_color.0 = HOVERED_TEXT_COLOR;
+            }
+            (false, false) => {
+                text_color.0 = TEXT_COLOR;
+            }
+        }
+    }
+}
+
+fn set_button_style(disabled: bool, hovered: bool, color: &mut BackgroundColor) {
     match (disabled, hovered) {
         (true, _) => {
             *color = NORMAL_BUTTON.into();
-            border_color.set_all(NORMAL_BUTTON_BORDER);
         }
         (false, true) => {
             *color = HOVERED_BUTTON.into();
-            border_color.set_all(HOVERED_BUTTON_BORDER);
         }
         (false, false) => {
             *color = NORMAL_BUTTON.into();
-            border_color.set_all(NORMAL_BUTTON_BORDER);
         }
     }
 }

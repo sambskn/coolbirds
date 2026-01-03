@@ -21,7 +21,7 @@ mod bird;
 mod log_text;
 mod ui;
 
-const BG_COLOR: Color = Color::srgb(0.47, 0.49, 0.68);
+pub const BG_COLOR: Color = Color::srgb(0.47, 0.49, 0.68);
 
 #[derive(Message, Debug)]
 struct RebuildBird;
