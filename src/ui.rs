@@ -14,6 +14,7 @@ use bevy_mod_clipboard::{Clipboard, ClipboardRead};
 const NORMAL_BUTTON: Color = Color::srgba(0., 0., 0., 0.00);
 const HOVERED_BUTTON: Color = Color::srgba(1.0, 1.0, 1.0, 0.95);
 pub const TEXT_COLOR: Color = Color::srgb(0.9, 0.9, 0.9);
+const FADED_TEXT_COLOR: Color = Color::srgba(0.9, 0.9, 0.9, 0.9);
 const HOVERED_TEXT_COLOR: Color = BG_COLOR;
 const DISABLED_TEXT_COLOR: Color = Color::srgba(0.7, 0.8, 0.85, 0.7);
 
@@ -395,6 +396,59 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                     ),
                 ]
             ),
+        ],
+    ));
+
+    // directions
+    commands.spawn((
+        Node {
+            position_type: PositionType::Absolute,
+            left: vw(6),
+            bottom: vh(6),
+            max_width: vw(33),
+            display: Display::Flex,
+            flex_direction: FlexDirection::Column,
+            align_items: AlignItems::Start,
+            justify_content: JustifyContent::Start,
+            ..default()
+        },
+        children![
+            (
+            Node {
+                margin: UiRect {
+                    left: px(0),
+                    right: px(0),
+                    top: px(0),
+                    bottom: px(-4)
+                },
+                ..default()
+            },
+            Text::new("INSTRUCTIONS"),
+            TextFont {
+                font: asset_server.load(FONT_PATH_OT_BRUT_REGULAR),
+                font_size: 28.0,
+                ..default()
+            },
+            TextColor(FADED_TEXT_COLOR),
+        ),
+        (
+            Node {
+                margin: UiRect {
+                    left: px(-30),
+                    right: px(0),
+                    top: px(0),
+                    bottom: px(0)
+                },
+                ..default()
+            },
+            Text::new("~ rotate birds with dragging motions\n   ~ zooming can also be done\n\t~ select the best birds"),
+            TextFont {
+                font: asset_server.load(FONT_PATH_OT_BRUT_REGULAR),
+                font_size: 12.0,
+                ..default()
+            },
+            TextColor(TEXT_COLOR),
+        )
         ],
     ));
 }
