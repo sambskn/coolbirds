@@ -4,8 +4,7 @@ use crate::{
     log_text::NewLog,
 };
 use bevy::{
-    input::mouse::{MouseScrollUnit, MouseWheel},
-    picking::hover::{HoverMap, Hovered},
+    picking::hover::Hovered,
     prelude::*,
     ui::InteractionDisabled,
     ui_widgets::{Activate, Button, UiWidgetsPlugins, observe},
@@ -25,99 +24,52 @@ pub struct BirdUIPlugin;
 impl Plugin for BirdUIPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(UiWidgetsPlugins)
+            .insert_resource::<PasteWatcher>(PasteWatcher(None))
             .add_systems(Startup, setup_ui)
             .add_systems(
                 Update,
                 (
-                    send_scroll_events,
                     update_button_style,
                     update_button_style2,
                     update_button_text_style,
+                    listen_for_pasted_values,
                 ),
-            )
-            .add_observer(on_scroll_handler);
+            );
     }
 }
 
-/// UI scrolling event.
-#[derive(EntityEvent, Debug)]
-#[entity_event(propagate, auto_propagate)]
-struct Scroll {
-    entity: Entity,
-    /// Scroll delta in logical coordinates.
-    delta: Vec2,
-}
+#[derive(Resource)]
+struct PasteWatcher(Option<ClipboardRead>);
 
-fn on_scroll_handler(
-    mut scroll: On<Scroll>,
-    mut query: Query<(&mut ScrollPosition, &Node, &ComputedNode)>,
+fn listen_for_pasted_values(
+    mut paste_watcher: ResMut<PasteWatcher>,
+    mut bird_inputs: ResMut<BirdGenInputs>,
+    mut rebuild_writer: MessageWriter<RebuildBird>,
+    mut log_writer: MessageWriter<NewLog>,
 ) {
-    let Ok((mut scroll_position, node, computed)) = query.get_mut(scroll.entity) else {
-        return;
-    };
-
-    let max_offset = (computed.content_size() - computed.size()) * computed.inverse_scale_factor();
-
-    let delta = &mut scroll.delta;
-    if node.overflow.x == OverflowAxis::Scroll && delta.x != 0. {
-        // Is this node already scrolled all the way in the direction of the scroll?
-        let max = if delta.x > 0. {
-            scroll_position.x >= max_offset.x
-        } else {
-            scroll_position.x <= 0.
-        };
-
-        if !max {
-            scroll_position.x += delta.x;
-            // Consume the X portion of the scroll delta.
-            delta.x = 0.;
-        }
-    }
-
-    if node.overflow.y == OverflowAxis::Scroll && delta.y != 0. {
-        // Is this node already scrolled all the way in the direction of the scroll?
-        let max = if delta.y > 0. {
-            scroll_position.y >= max_offset.y
-        } else {
-            scroll_position.y <= 0.
-        };
-
-        if !max {
-            scroll_position.y += delta.y;
-            // Consume the Y portion of the scroll delta.
-            delta.y = 0.;
-        }
-    }
-
-    // Stop propagating when the delta is fully consumed.
-    if *delta == Vec2::ZERO {
-        scroll.propagate(false);
-    }
-}
-
-const LINE_HEIGHT: f32 = 54.0;
-
-fn send_scroll_events(
-    mut mouse_wheel_reader: MessageReader<MouseWheel>,
-    hover_map: Res<HoverMap>,
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut commands: Commands,
-) {
-    for mouse_wheel in mouse_wheel_reader.read() {
-        let mut delta = -Vec2::new(mouse_wheel.x, mouse_wheel.y);
-
-        if mouse_wheel.unit == MouseScrollUnit::Line {
-            delta *= LINE_HEIGHT;
-        }
-
-        if keyboard_input.any_pressed([KeyCode::ControlLeft, KeyCode::ControlRight]) {
-            std::mem::swap(&mut delta.x, &mut delta.y);
-        }
-
-        for pointer_map in hover_map.values() {
-            for entity in pointer_map.keys().copied() {
-                commands.trigger(Scroll { entity, delta });
+    if let Some(read) = &mut paste_watcher.0 {
+        if let Some(contents) = read.poll_result() {
+            let clipboard_contents = contents.unwrap_or_else(|e| format!("{e:?}"));
+            // Now actually update da bird??
+            match bird_inputs.update_from_seed_string(clipboard_contents.clone()) {
+                Ok(()) => {
+                    log_writer.write(NewLog {
+                        text: format!(
+                            "loaded bird seed from clipboard\n{}",
+                            clipboard_contents.clone()
+                        ),
+                    });
+                    info!("Bird updated successfully!");
+                    rebuild_writer.write(RebuildBird);
+                }
+                Err(e) => {
+                    info!("Error parsing seed: {}", e);
+                    log_writer.write(NewLog {
+                        text: "oof that didn't work".to_string(),
+                    });
+                }
             }
+            paste_watcher.0 = None;
         }
     }
 }
@@ -269,49 +221,17 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                 bird_action_button(&asset_server, "paste".to_string()),
                 observe(
                     |_activate: On<Activate>,
-                     mut bird_inputs: ResMut<BirdGenInputs>,
-                     mut rebuild_writer: MessageWriter<RebuildBird>,
-                     mut maybe_read: Local<Option<ClipboardRead>>,
+                     mut paste_watcher: ResMut<PasteWatcher>,
                      mut clipboard: ResMut<Clipboard>,
-                     bird_state: Res<State<BirdState>>,
-                     mut log_writer: MessageWriter<NewLog>| {
+                     bird_state: Res<State<BirdState>>| {
                         if *bird_state.get() == BirdState::BirdVisible {
                             // If no clipboard read is pending, fetch any text
-                            if maybe_read.is_none() {
+                            if paste_watcher.0.is_none() {
                                 // `fetch_text` completes instantly on windows and unix.
                                 // On wasm32 the result is fetched asynchronously, and the `ClipboardRead` needs to stored and polled
                                 // on following frames until a result is available.
-                                *maybe_read = Some(clipboard.fetch_text());
-                            }
-
-                            // Check if the clipboard read is complete and, if so, display its result.
-                            if let Some(read) = maybe_read.as_mut() {
-                                if let Some(contents) = read.poll_result() {
-                                    let clipboard_contents =
-                                        contents.unwrap_or_else(|e| format!("{e:?}"));
-                                    // Now actually update da bird??
-                                    match bird_inputs
-                                        .update_from_seed_string(clipboard_contents.clone())
-                                    {
-                                        Ok(()) => {
-                                            log_writer.write(NewLog {
-                                                text: format!(
-                                                    "loaded bird seed from clipboard\n{}",
-                                                    clipboard_contents.clone()
-                                                ),
-                                            });
-                                            info!("Bird updated successfully!");
-                                            rebuild_writer.write(RebuildBird);
-                                        }
-                                        Err(e) => {
-                                            info!("Error parsing seed: {}", e);
-                                            log_writer.write(NewLog {
-                                                text: "oof that didn't work".to_string(),
-                                            });
-                                        }
-                                    }
-                                    *maybe_read = None;
-                                }
+                                // Our `listen_for_pasted_values` system will pick up the val
+                                paste_watcher.0 = Some(clipboard.fetch_text());
                             }
                         }
                     }
