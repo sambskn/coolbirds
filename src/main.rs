@@ -229,7 +229,8 @@ fn spawn_camera_and_light(
     let centered_y = (window_size.y - bird_box_size) / 2;
     let centered_x = (window_size.x - bird_box_size / 2) / 2;
     // Position camera to look at origin
-    let camera_pos = Vec3::new(65.0, 40.0, 65.0);
+    let cam_offset = 80.0;
+    let camera_pos = Vec3::new(cam_offset, cam_offset, cam_offset);
     let look_at = Vec3::ZERO;
 
     commands.spawn((
