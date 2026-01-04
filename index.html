@@ -65,7 +65,11 @@
     }
   </style>
   <title>coolbirds.website</title>
-  <link data-trunk rel="copy-dir" href="assets/" data-target-path="assets"/>
+  <link data-trunk rel="copy-dir" href="assets/fonts" data-target-path="assets/fonts"/>
+  <link data-trunk rel="copy-dir" href="assets/public" data-target-path="/"/>
+  <link data-trunk rel="icon" href="assets/public/favicon.ico"/>
+  <!-- manifest is referenced using the url it will have when deployed, not supported by data-trunk -->
+  <link rel="manifest" href="/site.webmanifest" />
   <link data-trunk rel="rust" />
 </head>
 
