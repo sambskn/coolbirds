@@ -26,6 +26,8 @@ pub const FONT_PATH_MONTREAL: &str = "fonts/OTNeueMontreal-BoldItalicSqueezed.tt
 const BIRD_CHOICE_LABEL_FONT_SIZE: f32 = 48.;
 const BIRD_CHOICE_DESCRIPTION_FONT_SIZE: f32 = 14.;
 
+const BIRD_CHOICE_VW_EDGE_PUSH: i32 = 10;
+
 pub struct BirdUIPlugin;
 impl Plugin for BirdUIPlugin {
     fn build(&self, app: &mut App) {
@@ -314,7 +316,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         Node {
             position_type: PositionType::Absolute,
-            left: vw(18),
+            left: vw(BIRD_CHOICE_VW_EDGE_PUSH),
             height: vh(100),
             display: Display::Flex,
             flex_direction: FlexDirection::Column,
@@ -368,7 +370,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         Node {
             position_type: PositionType::Absolute,
-            right: vw(18),
+            right: vw(BIRD_CHOICE_VW_EDGE_PUSH),
             height: vh(100),
             display: Display::Flex,
             flex_direction: FlexDirection::Column,
@@ -381,7 +383,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                 Node {
                     margin: UiRect {
                         left: px(0),
-                        right: px(0),
+                        right: px(4),
                         top: px(0),
                         bottom: px(0)
                     },
@@ -421,7 +423,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         Node {
             position_type: PositionType::Absolute,
-            bottom: vh(12),
+            bottom: vh(11),
             height: vh(40),
             left: vw(35),
             right: vw(35),
