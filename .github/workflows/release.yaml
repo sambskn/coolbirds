@@ -27,7 +27,7 @@ env:
   assets_path: assets
 
   # Whether to build and package a release for a given target platform.
-  build_for_web: true
+  build_for_web: false # they can just go to the site lol
   build_for_linux: true
   build_for_windows: true
   build_for_macos: true
@@ -43,30 +43,6 @@ env:
   # Applies to macOS releases.
   # Must contain only A-Z, a-z, 0-9, hyphen, and period: <https://developer.apple.com/documentation/bundleresources/information_property_list/cfbundleidentifier>.
   app_id: sambskn.cool-birds
-
-  # The base filename of the binary in the package produced by this workflow.
-  # Applies to Windows, macOS, and Linux releases.
-  # Defaults to `cargo_build_binary_name` if commented out.
-  #app_binary_name: chain_reaction_jam
-
-  # The name of the `.zip` or `.dmg` file produced by this workflow.
-  # Defaults to `app_binary_name` if commented out.
-  #app_package_name: chain-reaction-jam
-
-  # The display name of the app produced by this workflow.
-  # Applies to macOS releases.
-  # Defaults to `app_package_name` if commented out.
-  #app_display_name: Chain Reaction Jam
-
-  # The short display name of the app produced by this workflow.
-  # Applies to macOS releases.
-  # Must be 15 or fewer characters: <https://developer.apple.com/documentation/bundleresources/information_property_list/cfbundlename>.
-  # Defaults to `app_display_name` if commented out.
-  #app_short_name: Chain Reacti…
-
-  # Before enabling LFS, please take a look at GitHub's documentation for costs and quota limits:
-  # <https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-storage-and-bandwidth-usage>
-  # git_lfs: true
 
   # Enabling this only helps with consecutive releases to the same tag (and takes up cache storage space).
   # See: <https://github.com/orgs/community/discussions/27059>.
