@@ -405,13 +405,15 @@ impl BirdGenInputs {
     }
 
     pub fn get_stl(&self) -> Result<Vec<u8>, std::io::Error> {
-        let head_csg_mesh = generate_bird_head_csg_mesh(self);
-        let body_csg_mesh = generate_bird_body_csg_mesh(self);
+        // rotate STL's - idk man but when I uploaded to shapeways it thought the bird was on it's side, switching that up here
+        let head_csg_mesh = generate_bird_head_csg_mesh(self).rotate(-90., 0., 0.);
+        let body_csg_mesh = generate_bird_body_csg_mesh(self).rotate(-90., 0., 0.);
         let body_stl_str = body_csg_mesh
             .to_stl_ascii(format!("coolbird-{}", self.get_bird_seed_string()).as_str());
         let head_stl_str = head_csg_mesh.to_stl_ascii("head");
         // grab triangles from head and add to body, manually editing the string of the STL
         // (does feel a bit hacky - but it does maintain head and body triangles better)
+        // much bigger than the binary format stl tho
         {
             let mut result = body_stl_str.clone();
 
@@ -435,7 +437,7 @@ impl BirdGenInputs {
 }
 
 // Bumping to 40 made my computer sad :(
-// There is porbably a benefit to tuning the segement/stack count per geometry
+// There is probably a benefit to tuning the segment/stack count per geometry
 const RESOLUTION_PSUEDO_UNIT: usize = 16;
 
 const SPHERE_SEGMENTS: usize = RESOLUTION_PSUEDO_UNIT;

@@ -138,6 +138,19 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                         TextColor(TEXT_COLOR),
                     ),
                     (
+                        link_button(&asset_server, "source code".to_string()),
+                        observe(
+                            |_activate: On<Activate>, mut log_writer: MessageWriter<NewLog>| {
+                                // open link in browser
+                                let open_result = open::that("https://github.com/sambskn/coolbirds");
+                                match open_result {
+                                    Ok(_) => log_writer.write(NewLog { text: "make a PR coward".to_string() }),
+                                    Err(_) => log_writer.write(NewLog { text: "oops couldn't open the link, just search for the sambskn/coolbirds repo".to_string() })
+                                };
+                            }
+                        )
+                    ),
+                    (
                         Text::new("v0.2.2"),
                         TextFont {
                             font: asset_server.load(FONT_PATH_MONTREAL),
@@ -580,7 +593,6 @@ fn bird_action_button(asset_server: &AssetServer, text: String) -> impl Bundle {
             align_items: AlignItems::Center,
             margin: UiRect::bottom(px(2)),
             padding: UiRect::axes(px(8.), px(0.)),
-            border: UiRect::bottom(px(4)),
             ..default()
         },
         Button,
@@ -599,6 +611,32 @@ fn bird_action_button(asset_server: &AssetServer, text: String) -> impl Bundle {
     )
 }
 
+fn link_button(asset_server: &AssetServer, text: String) -> impl Bundle {
+    (
+        Node {
+            max_width: vw(10),
+            min_height: px(20.),
+            justify_content: JustifyContent::End,
+            align_items: AlignItems::Center,
+            padding: UiRect::axes(px(6.), px(0.)),
+            ..default()
+        },
+        Button,
+        Hovered::default(),
+        BackgroundColor(NORMAL_BUTTON),
+        children![(
+            Hovered::default(),
+            Text::new(text),
+            TextFont {
+                font: asset_server.load(FONT_PATH_MONTREAL),
+                font_size: 18.,
+                ..default()
+            },
+            TextColor(TEXT_COLOR),
+        )],
+    )
+}
+
 fn bird_selection_button(asset_server: &AssetServer, text: String) -> impl Bundle {
     (
         Node {
@@ -608,7 +646,6 @@ fn bird_selection_button(asset_server: &AssetServer, text: String) -> impl Bundl
             align_items: AlignItems::Center,
             margin: UiRect::horizontal(px(4)),
             padding: UiRect::axes(px(12.), px(16.)),
-            border: UiRect::bottom(px(4)),
             ..default()
         },
         Button,
@@ -637,7 +674,7 @@ fn footer(asset_server: &AssetServer) -> impl Bundle {
         },
         TextColor(Color::srgb(0.8, 0.85, 0.9)),
         Node {
-            margin: UiRect::top(px(10.)),
+            margin: UiRect::top(px(14.)),
             ..default()
         },
     )
