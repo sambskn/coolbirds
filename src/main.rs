@@ -23,6 +23,7 @@ mod bird;
 mod log_text;
 mod random_words;
 mod ui;
+mod open_link;
 
 pub const BG_COLOR: Color = Color::srgb(0.47, 0.49, 0.68);
 

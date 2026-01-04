@@ -2019,6 +2019,7 @@ dependencies = [
  "log",
  "open",
  "rand",
+ "web-sys",
 ]
 
 [[package]]

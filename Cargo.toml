@@ -28,7 +28,15 @@ csgrs = { git = "https://github.com/sambskn/csgrs.git", branch = "bump-geo", def
 ] }
 rand = "0.9.2"
 bevy_file_dialog = "0.9.0"
+
+# not-wasm deps
+[target.'cfg(not(target_family = "wasm"))'.dependencies]
+# open (for opening links in the user's browser) only works on native
 open = "5"
+
+# wasm only deps
+[target.'cfg(target_family = "wasm")'.dependencies]
+web-sys = { version = "0.3", features = ["Window"] } # used to open links
 
 [profile.release]
 # make small (z better than s)

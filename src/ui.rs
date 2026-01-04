@@ -2,6 +2,7 @@ use crate::{
     BG_COLOR, BirdSTLContents, BirdState, RebuildBird,
     bird::{BirdGenInputs, RecentBirds},
     log_text::NewLog,
+    open_link,
     random_words::get_bird_description,
 };
 use bevy::{
@@ -142,7 +143,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                         observe(
                             |_activate: On<Activate>, mut log_writer: MessageWriter<NewLog>| {
                                 // open link in browser
-                                let open_result = open::that("https://github.com/sambskn/coolbirds");
+                                let open_result = open_link::open_url("https://github.com/sambskn/coolbirds".to_string());
                                 match open_result {
                                     Ok(_) => log_writer.write(NewLog { text: "make a PR coward".to_string() }),
                                     Err(_) => log_writer.write(NewLog { text: "oops couldn't open the link, just search for the sambskn/coolbirds repo".to_string() })
