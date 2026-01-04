@@ -511,6 +511,19 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                         ),
                     ),
                     (
+                        bird_selection_button(&asset_server, "re-roll".to_string()),
+                        observe(
+                            |_activate: On<Activate>,
+                             mut rebuild_writer: MessageWriter<RebuildBird>,
+                             bird_state: Res<State<BirdState>>| {
+                                if *bird_state.get() == BirdState::BirdVisible {
+                                    // Just re-run without setting new inputs, bye left & right
+                                    rebuild_writer.write(RebuildBird);
+                                }
+                            }
+                        ),
+                    ),
+                    (
                         bird_selection_button(&asset_server, "right bird".to_string()),
                         observe(
                             |_activate: On<Activate>,
