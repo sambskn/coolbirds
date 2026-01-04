@@ -403,6 +403,35 @@ impl BirdGenInputs {
 
         Ok(())
     }
+
+    pub fn get_stl(&self) -> Result<Vec<u8>, std::io::Error> {
+        let head_csg_mesh = generate_bird_head_csg_mesh(self);
+        let body_csg_mesh = generate_bird_body_csg_mesh(self);
+        let body_stl_str = body_csg_mesh
+            .to_stl_ascii(format!("coolbird-{}", self.get_bird_seed_string()).as_str());
+        let head_stl_str = head_csg_mesh.to_stl_ascii("head");
+        // grab triangles from head and add to body, manually editing the string of the STL
+        // (does feel a bit hacky - but it does maintain head and body triangles better)
+        {
+            let mut result = body_stl_str.clone();
+
+            // Remove the "endsolid" line from body
+            if let Some(pos) = result.rfind("endsolid") {
+                result.truncate(pos);
+            }
+
+            // Extract facets from head (between "solid" line and "endsolid" line)
+            let facets_start = head_stl_str.find("facet").unwrap_or(head_stl_str.len());
+            let facets_end = head_stl_str.rfind("endsolid").unwrap_or(head_stl_str.len());
+            let head_facets = &head_stl_str[facets_start..facets_end];
+
+            // Combine: body (without endsolid) + head facets + endsolid
+            result.push_str(head_facets);
+            result.push_str("endsolid bird\n");
+
+            Ok(result.as_bytes().to_vec())
+        }
+    }
 }
 
 // Bumping to 40 made my computer sad :(

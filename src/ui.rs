@@ -1,5 +1,5 @@
 use crate::{
-    BG_COLOR, BirdState, RebuildBird,
+    BG_COLOR, BirdSTLContents, BirdState, RebuildBird,
     bird::{BirdGenInputs, RecentBirds},
     log_text::NewLog,
 };
@@ -9,6 +9,7 @@ use bevy::{
     ui::InteractionDisabled,
     ui_widgets::{Activate, Button, UiWidgetsPlugins, observe},
 };
+use bevy_file_dialog::FileDialogExt;
 use bevy_mod_clipboard::{Clipboard, ClipboardRead};
 
 const NORMAL_BUTTON: Color = Color::srgba(0., 0., 0., 0.00);
@@ -182,7 +183,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         Node {
             position_type: PositionType::Absolute,
-            top: px(20),
+            top: px(8),
             right: vw(50),
             max_width: vw(45),
             padding: UiRect {
@@ -233,6 +234,39 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 // on following frames until a result is available.
                                 // Our `listen_for_pasted_values` system will pick up the val
                                 paste_watcher.0 = Some(clipboard.fetch_text());
+                            }
+                        }
+                    }
+                )
+            ),
+            (
+                bird_action_button(&asset_server, "save stl".to_string()),
+                observe(
+                    |_activate: On<Activate>,
+                     bird_inputs: Res<BirdGenInputs>,
+                     mut commands: Commands,
+                     bird_state: Res<State<BirdState>>,
+                     mut log_writer: MessageWriter<NewLog>| {
+                        if *bird_state.get() == BirdState::BirdVisible {
+                            log_writer.write(NewLog {
+                                text: "creating bird STL...".to_string(),
+                            });
+                            // make bird stl
+                            let stl_bytes_result = bird_inputs.get_stl();
+                            match stl_bytes_result {
+                                Ok(stl_binary) => {
+                                    // pop a file dialog for them to save the file
+                                    commands
+                                        .dialog()
+                                        .add_filter("STL", &["stl"])
+                                        .set_file_name("coolbird.stl")
+                                        .save_file::<BirdSTLContents>(stl_binary);
+                                }
+                                _ => {
+                                    log_writer.write(NewLog {
+                                        text: "yikes couldn't make an STL oops".to_string(),
+                                    });
+                                }
                             }
                         }
                     }
@@ -348,6 +382,24 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                 TextFont {
                     font: asset_server.load(FONT_PATH_OT_BRUT_REGULAR),
                     font_size: 32.0,
+                    ..default()
+                },
+                TextColor(TEXT_COLOR),
+            ),
+            (
+                Node {
+                    margin: UiRect {
+                        left: px(0),
+                        right: px(0),
+                        top: px(0),
+                        bottom: px(0)
+                    },
+                    ..default()
+                },
+                Text::new("selected birds become the new seed"),
+                TextFont {
+                    font: asset_server.load(FONT_PATH_OT_BRUT_REGULAR),
+                    font_size: 16.0,
                     ..default()
                 },
                 TextColor(TEXT_COLOR),

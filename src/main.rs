@@ -14,6 +14,7 @@ use bevy::{
     picking::hover::HoverMap,
     prelude::*,
 };
+use bevy_file_dialog::FileDialogPlugin;
 use bevy_mod_clipboard::ClipboardPlugin;
 use rand::seq::IndexedRandom;
 
@@ -32,6 +33,8 @@ enum BirdState {
     BirdVisible,
 }
 
+pub struct BirdSTLContents;
+
 fn main() {
     App::new()
         .add_plugins((
@@ -45,6 +48,7 @@ fn main() {
                 ..default()
             }),
             ClipboardPlugin,
+            FileDialogPlugin::new().with_save_file::<BirdSTLContents>(),
         ))
         .add_plugins(LogTextPlugin)
         .add_plugins(InputDispatchPlugin)
