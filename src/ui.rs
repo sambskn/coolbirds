@@ -2,6 +2,7 @@ use crate::{
     BG_COLOR, BirdSTLContents, BirdState, RebuildBird,
     bird::{BirdGenInputs, RecentBirds},
     log_text::NewLog,
+    random_words::get_bird_description,
 };
 use bevy::{
     picking::hover::Hovered,
@@ -22,6 +23,9 @@ const DISABLED_TEXT_COLOR: Color = Color::srgba(0.7, 0.8, 0.85, 0.7);
 pub const FONT_PATH_OT_BRUT_REGULAR: &str = "fonts/OTBrut-Regular.ttf";
 pub const FONT_PATH_MONTREAL: &str = "fonts/OTNeueMontreal-BoldItalicSqueezed.ttf";
 
+const BIRD_CHOICE_LABEL_FONT_SIZE: f32 = 48.;
+const BIRD_CHOICE_DESCRIPTION_FONT_SIZE: f32 = 14.;
+
 pub struct BirdUIPlugin;
 impl Plugin for BirdUIPlugin {
     fn build(&self, app: &mut App) {
@@ -35,8 +39,23 @@ impl Plugin for BirdUIPlugin {
                     update_button_style2,
                     update_button_text_style,
                     listen_for_pasted_values,
+                    handle_bird_rebuild,
                 ),
             );
+    }
+}
+
+#[derive(Component)]
+struct BirdDescription;
+
+fn handle_bird_rebuild(
+    mut bird_rebuild_reader: MessageReader<RebuildBird>,
+    mut bird_descriptions: Query<&mut Text, With<BirdDescription>>,
+) {
+    for _event in bird_rebuild_reader.read() {
+        for mut bird_description in &mut bird_descriptions {
+            bird_description.0 = get_bird_description();
+        }
     }
 }
 
@@ -290,6 +309,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     ));
 
     // left bird label
+    let bird_desc_left = get_bird_description();
     commands.spawn((
         Node {
             position_type: PositionType::Absolute,
@@ -301,27 +321,49 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
             justify_content: JustifyContent::Center,
             ..default()
         },
-        children![(
-            Node {
-                margin: UiRect {
-                    left: px(0),
-                    right: px(0),
-                    top: px(20),
-                    bottom: px(0)
+        children![
+            (
+                Node {
+                    margin: UiRect {
+                        left: px(0),
+                        right: px(40),
+                        top: px(0),
+                        bottom: px(0)
+                    },
+                    ..default()
                 },
-                ..default()
-            },
-            Text::new("LEFT"),
-            TextFont {
-                font: asset_server.load(FONT_PATH_OT_BRUT_REGULAR),
-                font_size: 32.0,
-                ..default()
-            },
-            TextColor(TEXT_COLOR),
-        )],
+                BirdDescription,
+                Text::new(bird_desc_left),
+                TextFont {
+                    font: asset_server.load(FONT_PATH_OT_BRUT_REGULAR),
+                    font_size: BIRD_CHOICE_DESCRIPTION_FONT_SIZE,
+                    ..default()
+                },
+                TextColor(TEXT_COLOR),
+            ),
+            (
+                Node {
+                    margin: UiRect {
+                        left: px(0),
+                        right: px(0),
+                        top: px(0),
+                        bottom: px(0)
+                    },
+                    ..default()
+                },
+                Text::new("LEFT"),
+                TextFont {
+                    font: asset_server.load(FONT_PATH_MONTREAL),
+                    font_size: BIRD_CHOICE_LABEL_FONT_SIZE,
+                    ..default()
+                },
+                TextColor(TEXT_COLOR),
+            ),
+        ],
     ));
 
     // right bird label
+    let bird_desc_right = get_bird_description();
     commands.spawn((
         Node {
             position_type: PositionType::Absolute,
@@ -333,24 +375,45 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
             justify_content: JustifyContent::Center,
             ..default()
         },
-        children![(
-            Node {
-                margin: UiRect {
-                    left: px(0),
-                    right: px(0),
-                    top: px(0),
-                    bottom: px(60)
+        children![
+            (
+                Node {
+                    margin: UiRect {
+                        left: px(0),
+                        right: px(0),
+                        top: px(0),
+                        bottom: px(0)
+                    },
+                    ..default()
                 },
-                ..default()
-            },
-            Text::new("RIGHT"),
-            TextFont {
-                font: asset_server.load(FONT_PATH_OT_BRUT_REGULAR),
-                font_size: 32.0,
-                ..default()
-            },
-            TextColor(TEXT_COLOR),
-        )],
+                Text::new("RIGHT"),
+                TextFont {
+                    font: asset_server.load(FONT_PATH_MONTREAL),
+                    font_size: BIRD_CHOICE_LABEL_FONT_SIZE,
+                    ..default()
+                },
+                TextColor(TEXT_COLOR),
+            ),
+            (
+                Node {
+                    margin: UiRect {
+                        left: px(60),
+                        right: px(0),
+                        top: px(0),
+                        bottom: px(60)
+                    },
+                    ..default()
+                },
+                BirdDescription,
+                Text::new(bird_desc_right),
+                TextFont {
+                    font: asset_server.load(FONT_PATH_OT_BRUT_REGULAR),
+                    font_size: BIRD_CHOICE_DESCRIPTION_FONT_SIZE,
+                    ..default()
+                },
+                TextColor(TEXT_COLOR),
+            ),
+        ],
     ));
 
     // general actions
