@@ -6,3 +6,6 @@ wasm-build:
 
 wasm-run:
     wasmer run . --net
+
+wasm-check:
+    cargo c --target wasm32-unknown-unknown
