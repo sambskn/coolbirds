@@ -1,6 +1,7 @@
 use crate::{
     bird::{BirdGenInputs, RecentBirds, generate_bird_body_mesh, generate_bird_head_mesh},
     log_text::{LogTextPlugin, NewLog},
+    random_words::get_random_exaclamatory,
     ui::BirdUIPlugin,
 };
 use bevy::{
@@ -20,6 +21,7 @@ use rand::seq::IndexedRandom;
 
 mod bird;
 mod log_text;
+mod random_words;
 mod ui;
 
 pub const BG_COLOR: Color = Color::srgb(0.47, 0.49, 0.68);
@@ -40,7 +42,7 @@ fn main() {
         .add_plugins((
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Window {
-                    title: "bird-o-matic".to_string(),
+                    title: "cool birds :)".to_string(),
                     fit_canvas_to_parent: true,
                     ..default()
                 }
@@ -88,7 +90,7 @@ fn handle_bird_rebuild(
 ) {
     for _event in bird_rebuild_reader.read() {
         log_writer.write(NewLog {
-            text: "loading fresh birds".to_string(),
+            text: format!("loading fresh birds   ~   {}", get_random_exaclamatory()),
         });
         for bird_mesh_entity in bird_mesh_query.iter() {
             commands.entity(bird_mesh_entity).despawn();
