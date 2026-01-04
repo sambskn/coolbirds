@@ -152,7 +152,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                         )
                     ),
                     (
-                        Text::new("v0.2.2"),
+                        Text::new(format!("v{}", env!("CARGO_PKG_VERSION"))),
                         TextFont {
                             font: asset_server.load(FONT_PATH_MONTREAL),
                             font_size: 16.0,
