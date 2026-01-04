@@ -21,9 +21,9 @@ use rand::seq::IndexedRandom;
 
 mod bird;
 mod log_text;
+mod open_link;
 mod random_words;
 mod ui;
-mod open_link;
 
 pub const BG_COLOR: Color = Color::srgb(0.47, 0.49, 0.68);
 
@@ -59,7 +59,7 @@ fn main() {
         .add_message::<RebuildBird>()
         .insert_state(BirdState::BirdVisible)
         .insert_resource(ClearColor(BG_COLOR))
-        .insert_resource(BirdGenInputs::default())
+        .insert_resource(BirdGenInputs::get_a_good_bird())
         .insert_resource(RecentBirds {
             left: BirdGenInputs::default(),
             right: BirdGenInputs::default(),

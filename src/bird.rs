@@ -1,6 +1,15 @@
 use bevy::{ecs::resource::Resource, mesh::Mesh};
 use csgrs::{mesh::plane::Plane, traits::CSG};
+use rand::seq::IndexedRandom;
 type CSGMesh = csgrs::mesh::Mesh<()>;
+
+const GOOD_BIRDS: &'static [&'static str] = &[
+    "m.22.67.4.190.h.26.24.17.-7.26.33.36.b.43.21.55.13.35.t.36.15.-15.15.82.c.92",
+    "m.44.67.16.131.h.20.1.3.10.26.30.37.b.57.21.55.13.35.t.31.15.-15.-6.82.c.94",
+    "m.14.57.15.10.h.22.32.7.6.32.27.-22.b.60.40.100.40.25.t.50.47.14.72.197.c.100",
+    "m.27.94.14.124.h.18.32.13.9.23.12.9.b.36.31.57.20.47.t.78.4.40.12.91.c.100",
+    "m.15.79.5.120.h.32.-17.7.0.15.10.9.b.19.23.90.22.25.t.44.1.-5.40.65.c.-25",
+];
 
 // Inputs/descriptions copied from original Bird-o-matic .SCAD script (see referenced script at bottom of file)
 // [Ed. note: Made em all f32's for now]
@@ -434,11 +443,21 @@ impl BirdGenInputs {
             Ok(result.as_bytes().to_vec())
         }
     }
+    pub fn get_a_good_bird() -> Self {
+        let mut rng = rand::rng();
+        // select one of our strings of good birds
+        let good_bird_str = *(GOOD_BIRDS.choose(&mut rng).unwrap());
+        let mut output = BirdGenInputs::default();
+        output
+            .update_from_seed_string(good_bird_str.to_string())
+            .unwrap();
+        output
+    }
 }
 
 // Bumping to 40 made my computer sad :(
 // There is probably a benefit to tuning the segment/stack count per geometry
-const RESOLUTION_PSUEDO_UNIT: usize = 16;
+const RESOLUTION_PSUEDO_UNIT: usize = 20;
 
 const SPHERE_SEGMENTS: usize = RESOLUTION_PSUEDO_UNIT;
 const SPHERE_STACKS: usize = RESOLUTION_PSUEDO_UNIT * 2;
@@ -629,9 +648,12 @@ pub fn generate_bird_body_mesh(input: &BirdGenInputs) -> Mesh {
 /* From https://www.thingiverse.com/thing:139945/files
 
 // For Reference: The original Bird-o-Matic OpenSCAD code
-// Generally csgrs seems to be a little mroe finnicky when doing unions of different solids
+// Generally csgrs seems to be a little more finnicky when doing unions of different solids
 // E.g. the `scale` command for the eyes in the original code kinda borked the other eye when
 //      implemented directly here (ended up using csgrs's mirror fn instead)
+// Big ty to the original author ('mooncactus' on thingiverse)!
+// ~~~ORIGINAL CODE BELOW~~~
+
 // Better use "fast" when tuning your bird, then "hi" to print it
 precision="low"; // [low,med,hi]
 
