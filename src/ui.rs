@@ -109,8 +109,8 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         Node {
             position_type: PositionType::Absolute,
-            right: px(24),
-            bottom: px(24),
+            right: px(18),
+            bottom: px(12),
             display: Display::Flex,
             flex_direction: FlexDirection::Column,
             ..default()
@@ -122,14 +122,15 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                     flex_direction: FlexDirection::Row,
                     align_items: AlignItems::Center,
                     justify_content: JustifyContent::SpaceBetween,
+                    margin: UiRect::vertical(px(-12)),
                     ..default()
                 },
                 children![
                     (
                         Text::new("coolbirds.website"),
                         TextFont {
-                            font: asset_server.load(FONT_PATH_OT_BRUT_REGULAR),
-                            font_size: 18.0,
+                            font: asset_server.load(FONT_PATH_MONTREAL),
+                            font_size: 28.0,
                             ..default()
                         },
                         TextColor(TEXT_COLOR),
@@ -137,8 +138,8 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                     (
                         Text::new("v0.2.1"),
                         TextFont {
-                            font: asset_server.load(FONT_PATH_OT_BRUT_REGULAR),
-                            font_size: 12.0,
+                            font: asset_server.load(FONT_PATH_MONTREAL),
+                            font_size: 16.0,
                             ..default()
                         },
                         TextColor(TEXT_COLOR),
@@ -518,8 +519,8 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         Node {
             position_type: PositionType::Absolute,
-            left: vw(6),
-            bottom: vh(6),
+            left: vw(5),
+            bottom: vh(2),
             max_width: vw(33),
             display: Display::Flex,
             flex_direction: FlexDirection::Column,
