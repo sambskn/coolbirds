@@ -12,13 +12,19 @@ opt-level = 1
 opt-level = 3
 
 [dependencies]
-log = { version = "*", features = ["max_level_debug", "release_max_level_warn"] }
+log = { version = "*", features = [
+    "max_level_debug",
+    "release_max_level_warn",
+] }
 accesskit = "0.21.1"
-bevy = { version = "0.17.3", features= ["experimental_bevy_ui_widgets"]}
+bevy = { version = "0.17.3", features = ["experimental_bevy_ui_widgets"] }
 bevy_mod_clipboard = "0.1.2"
-csgrs = { git = "https://github.com/sambskn/csgrs.git", branch="bump-geo", features=["bevymesh"] }
-geo = "0.31"
-geo-types = "0.7.17"
+csgrs = { git = "https://github.com/sambskn/csgrs.git", branch = "bump-geo", default-features = false, features = [
+    "chull-io",
+    "delaunay",
+    "f64",
+    "bevymesh",
+] }
 rand = "0.9.2"
 
 [profile.release]
