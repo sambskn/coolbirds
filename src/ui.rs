@@ -106,7 +106,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                 },
                 children![
                     (
-                        Text::new("bird-o-matic"),
+                        Text::new("coolbirds.website"),
                         TextFont {
                             font: asset_server.load(FONT_PATH_OT_BRUT_REGULAR),
                             font_size: 18.0,
