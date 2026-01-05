@@ -25,7 +25,10 @@ pub const FONT_PATH_OT_BRUT_REGULAR: &str = "fonts/OTBrut-Regular.ttf";
 pub const FONT_PATH_MONTREAL: &str = "fonts/OTNeueMontreal-BoldItalicSqueezed.ttf";
 
 const BIRD_CHOICE_LABEL_FONT_SIZE: f32 = 48.;
-const BIRD_CHOICE_DESCRIPTION_FONT_SIZE: f32 = 14.;
+const BIRD_CHOICE_DESCRIPTION_FONT_SIZE: f32 = 16.;
+
+const INSTRUCTIONS_LABEL_FONT_SIZE: f32 = 22.;
+const INSTRUCTIONS_FONT_SIZE: f32 = 16.;
 
 const BIRD_CHOICE_VW_EDGE_PUSH: i32 = 10;
 
@@ -571,7 +574,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
             Text::new("INSTRUCTIONS"),
             TextFont {
                 font: asset_server.load(FONT_PATH_OT_BRUT_REGULAR),
-                font_size: 28.0,
+                font_size: INSTRUCTIONS_LABEL_FONT_SIZE,
                 ..default()
             },
             TextColor(FADED_TEXT_COLOR),
@@ -589,7 +592,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
             Text::new("~ rotate birds with dragging motions\n   ~ zooming can also be done\n\t~ select the best birds"),
             TextFont {
                 font: asset_server.load(FONT_PATH_OT_BRUT_REGULAR),
-                font_size: 12.0,
+                font_size: INSTRUCTIONS_FONT_SIZE,
                 ..default()
             },
             TextColor(TEXT_COLOR),
