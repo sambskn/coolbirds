@@ -316,7 +316,7 @@ fn spawn_camera_and_light(
     commands.spawn((
         DirectionalLight {
             shadows_enabled: true,
-            illuminance: 30000.0,
+            illuminance: 7500.,
             ..default()
         },
         Transform::from_xyz(25.0, 20.0, 10.0).with_rotation(Quat::from_xyzw(
