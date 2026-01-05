@@ -17,7 +17,7 @@ use bevy::{
 };
 use bevy_file_dialog::FileDialogPlugin;
 use bevy_mod_clipboard::ClipboardPlugin;
-use rand::seq::IndexedRandom;
+use rand::{Rng, seq::IndexedRandom};
 
 mod bird;
 mod log_text;
@@ -173,10 +173,14 @@ fn spawn_bird_mesh(
     let seed_head_mesh = generate_bird_head_mesh(&current_bird_inputs);
     let seed_body_mesh = generate_bird_body_mesh(&current_bird_inputs);
 
-    let mut random_bird_inputs = BirdGenInputs::default();
-    random_bird_inputs.randomize_values();
-    let left_bird_inputs = current_bird_inputs.get_child_with(&random_bird_inputs);
-    let right_bird_inputs = current_bird_inputs.get_child_with(&random_bird_inputs);
+    // deviate bird inputs for left and right bird separately
+    let mut rng = rand::rng();
+    let mut left_bird_source = BirdGenInputs::get_semi_random_bird();
+    left_bird_source.bird_lerp(&current_bird_inputs, rng.random_range(0.12..=0.82));
+    let mut right_bird_source = BirdGenInputs::get_semi_random_bird();
+    right_bird_source.bird_lerp(&current_bird_inputs, rng.random_range(0.12..=0.82));
+    let left_bird_inputs = current_bird_inputs.get_child_with(&left_bird_source);
+    let right_bird_inputs = current_bird_inputs.get_child_with(&right_bird_source);
 
     // update RecentBirds
     recent_birds.left = left_bird_inputs;

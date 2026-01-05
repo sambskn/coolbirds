@@ -16,6 +16,7 @@ const GOOD_BIRDS: &'static [&'static str] = &[
     "m.23.88.3.118.h.28.25.18.5.67.-36.1.b.42.3.51.17.7.t.37.44.-18.-29.184.c.-81",
     "m.49.35.0.10.h.19.7.1.4.21.-15.-9.b.24.58.76.8.36.t.16.3.30.84.77.c.43",
     "m.28.40.24.45.h.17.19.4.8.4.-23.-9.b.44.23.80.40.6.t.60.40.-13.-15.120.c.65",
+    "m.31.68.10.78.h.16.-14.12.13.31.24.-18.b.89.48.127.27.41.t.37.43.22.72.41.c.-3",
 ];
 
 // Inputs/descriptions copied from original Bird-o-matic .SCAD script (see referenced script at bottom of file)
@@ -312,7 +313,7 @@ impl BirdGenInputs {
             }
 
             // chance to mutate
-            let should_mutate = rng.random_bool(0.05);
+            let should_mutate = rng.random_bool(0.07);
             if should_mutate {
                 let unmutated = child.get_input_value_for_type(&bird_input_type);
                 let mutation_amount = rng.random_range(0.05..0.95); // only shrinks vals rn
@@ -487,6 +488,14 @@ impl BirdGenInputs {
         output
             .update_from_seed_string(good_bird_str.to_string())
             .unwrap();
+        output
+    }
+
+    pub fn get_semi_random_bird() -> Self {
+        let mut random_bird = BirdGenInputs::default();
+        random_bird.randomize_values();
+        let mut output = BirdGenInputs::get_a_good_bird();
+        output.bird_lerp(&random_bird, 0.01);
         output
     }
 }
