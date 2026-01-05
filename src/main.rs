@@ -548,6 +548,11 @@ fn get_colors(num_colors: usize) -> Vec<Color> {
         Color::linear_rgb(58.0 / 255.0, 12.0 / 255.0, 163.0 / 255.0),  // Vivid Royal
         Color::linear_rgb(190.0 / 255.0, 237.0 / 255.0, 170.0 / 255.0), // Tea Green
         Color::linear_rgb(247.0 / 255.0, 179.0 / 255.0, 43.0 / 255.0), // Sunflower Gold
+        Color::oklch(0.6809, 0.2195, 351.),                            // #f54ea9
+        Color::oklch(0.8533, 0.2195, 127.59),                          // #a6e80f
+        Color::oklch(0.6667, 0.2195, 29.12),                           // #ff4a3a
+        Color::oklch(0.6706, 0.179, 150.35),                           // #13b356
+        Color::oklch(0.6506, 0.169, 48.7),                             // #de6914
     ];
     sources
         .choose_multiple(&mut rng, num_colors)
