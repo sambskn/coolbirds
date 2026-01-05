@@ -163,7 +163,7 @@ pub fn get_random_bird_adjective() -> String {
         "'bird-type'",
         "friendly (uncomfortable)",
         "stunning",
-        "serving",
+        "swerving",
         "bird that makes them say its giving",
         "card counting",
         "sadly illiterate",
@@ -182,7 +182,21 @@ pub fn get_random_bird_adjective() -> String {
         "fun-employed",
         "3-axle",
         "tree that looks like a",
-        "crude facsimile of the world's greatest"
+        "crude facsimile of the world's greatest",
+        "tarm to fable",
+        "real fake",
+        "blueprint for future",
+        "valid response to the questions you have is often",
+        "english-squeaking",
+        "4 neuron",
+        "bird that reminds you of that one",
+        "surprisingly un-crablike",
+        "Triassic-era",
+        "frozen brrrrrr-d get a coat for that",
+        "once and future",
+        "machine for",
+        "perfectly round",
+        "game ready",
     ];
     let chosen_word = *sources.choose(&mut rng).unwrap();
     chosen_word.to_string()
