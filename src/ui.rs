@@ -475,7 +475,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                         left: px(0),
                         right: px(0),
                         top: px(0),
-                        bottom: px(0)
+                        bottom: px(8)
                     },
                     ..default()
                 },
