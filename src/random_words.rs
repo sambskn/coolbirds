@@ -159,7 +159,7 @@ pub fn get_random_bird_adjective() -> String {
         "bird who can speak to other",
         "swagless shell of a",
         "double dry hopped hazy",
-        "oil barrel aged",
+        "barrel-aged (oil barrel)",
         "'bird-type'",
         "friendly (uncomfortable)",
         "stunning",
