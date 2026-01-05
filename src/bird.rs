@@ -14,7 +14,8 @@ const GOOD_BIRDS: &'static [&'static str] = &[
     "m.1.86.3.145.h.29.16.14.8.15.-44.-43.b.53.48.149.6.37.t.28.6.27.-19.199.c.-30",
     "m.19.86.1.33.h.13.17.17.-4.1.6.34.b.27.26.103.17.45.t.30.19.39.33.102.c.-33",
     "m.23.88.3.118.h.28.25.18.5.67.-36.1.b.42.3.51.17.7.t.37.44.-18.-29.184.c.-81",
-    "m.49.35.0.10.h.19.7.1.4.21.-15.-9.b.24.58.76.8.36.t.16.3.30.84.77.c.43"
+    "m.49.35.0.10.h.19.7.1.4.21.-15.-9.b.24.58.76.8.36.t.16.3.30.84.77.c.43",
+    "m.28.40.24.45.h.17.19.4.8.4.-23.-9.b.44.23.80.40.6.t.60.40.-13.-15.120.c.65",
 ];
 
 // Inputs/descriptions copied from original Bird-o-matic .SCAD script (see referenced script at bottom of file)
@@ -213,6 +214,35 @@ impl BirdGenInputs {
         self.tail_pitch = rng.random_range(-45.0..=90.0);
         self.tail_roundness = rng.random_range(10.0..=200.0);
         self.base_flat = rng.random_range(-100.0..=100.0);
+    }
+
+    pub fn bird_lerp(&mut self, other_bird: &BirdGenInputs, lerp_val: f32) {
+        self.beak_length = lerp(self.beak_length, other_bird.beak_length, lerp_val);
+        self.beak_size = lerp(self.beak_size, other_bird.beak_size, lerp_val);
+        self.beak_width = lerp(self.beak_width, other_bird.beak_width, lerp_val);
+        self.beak_roundness = lerp(self.beak_roundness, other_bird.beak_roundness, lerp_val);
+        self.head_size = lerp(self.head_size, other_bird.head_size, lerp_val);
+        self.head_to_belly = lerp(self.head_to_belly, other_bird.head_to_belly, lerp_val);
+        self.eye_size = lerp(self.eye_size, other_bird.eye_size, lerp_val);
+        self.head_lateral_offset = lerp(
+            self.head_lateral_offset,
+            other_bird.head_lateral_offset,
+            lerp_val,
+        );
+        self.head_level = lerp(self.head_level, other_bird.head_level, lerp_val);
+        self.head_yaw = lerp(self.head_yaw, other_bird.head_yaw, lerp_val);
+        self.head_pitch = lerp(self.head_pitch, other_bird.head_pitch, lerp_val);
+        self.belly_length = lerp(self.belly_length, other_bird.belly_length, lerp_val);
+        self.belly_size = lerp(self.belly_size, other_bird.belly_size, lerp_val);
+        self.belly_fat = lerp(self.belly_fat, other_bird.belly_fat, lerp_val);
+        self.belly_to_bottom = lerp(self.belly_to_bottom, other_bird.belly_to_bottom, lerp_val);
+        self.bottom_size = lerp(self.bottom_size, other_bird.bottom_size, lerp_val);
+        self.tail_length = lerp(self.tail_length, other_bird.tail_length, lerp_val);
+        self.tail_width = lerp(self.tail_width, other_bird.tail_width, lerp_val);
+        self.tail_yaw = lerp(self.tail_yaw, other_bird.tail_yaw, lerp_val);
+        self.tail_pitch = lerp(self.tail_pitch, other_bird.tail_pitch, lerp_val);
+        self.tail_roundness = lerp(self.tail_roundness, other_bird.tail_roundness, lerp_val);
+        self.base_flat = lerp(self.base_flat, other_bird.base_flat, lerp_val);
     }
 
     pub fn copy_from_other_bird(&mut self, other_bird: &BirdGenInputs) {
@@ -459,6 +489,10 @@ impl BirdGenInputs {
             .unwrap();
         output
     }
+}
+
+fn lerp(v0: f32, v1: f32, t: f32) -> f32 {
+    (1. - t) * v0 + t * v1
 }
 
 // Bumping to 40 made my computer sad :(
