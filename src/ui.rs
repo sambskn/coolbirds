@@ -202,7 +202,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                     top: px(-10),
                     bottom: px(0)
                 },
-                max_width: vw(40),
+                max_width: px(540),
                 ..default()
             },
             Text::new("bird of origin, it's 'genome' will be mixed with algorithm-provided birds to create new progeny"),
