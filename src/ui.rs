@@ -180,7 +180,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
         children![(
             Node {
                 margin: UiRect {
-                    left: px(275),
+                    left: px(325),
                     right: px(0),
                     top: px(0),
                     bottom: px(0)
@@ -197,7 +197,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
         ), (
             Node {
                 margin: UiRect {
-                    left: px(326),
+                    left: px(376),
                     right: px(0),
                     top: px(-10),
                     bottom: px(0)
@@ -219,12 +219,12 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         Node {
             position_type: PositionType::Absolute,
-            top: px(8),
+            top: px(9),
             right: vw(50),
             max_width: vw(45),
             padding: UiRect {
                 left: px(0),
-                right: px(100),
+                right: px(120),
                 top: px(0),
                 bottom: px(0),
             },
