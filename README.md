@@ -15,4 +15,4 @@ open up [the site](https://coolbirds.website) or download a release for your mac
 - copy a bird seed (text representation of bird)
 - paste a bird seed
 
-[pls share any god birds you make!](https://github.com/sambskn/coolbirds/discussions/9) - will try to add them to the set of initial 'good birds' to pick from!
+[pls share any good birds you make!](https://github.com/sambskn/coolbirds/discussions/9) - will try to add them to the set of initial 'good birds' to pick from!
