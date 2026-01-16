@@ -1,0 +1,16 @@
+[package]
+name = "birdgen"
+version = "0.1.0"
+edition = "2024"
+
+
+[dependencies]
+bevy = { workspace = true }
+csgrs = { git = "https://github.com/sambskn/csgrs.git", branch = "bump-geo", default-features = false, features = [
+    "chull-io",
+    "delaunay",
+    "f64",
+    "bevymesh",
+    "stl-io",
+] }
+rand = { workspace = true }

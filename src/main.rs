@@ -1,5 +1,4 @@
 use crate::{
-    bird::{BirdGenInputs, RecentBirds, generate_bird_body_mesh, generate_bird_head_mesh},
     log_text::{LogTextPlugin, NewLog},
     random_words::get_random_exaclamatory,
     ui::BirdUIPlugin,
@@ -17,9 +16,9 @@ use bevy::{
 };
 use bevy_file_dialog::FileDialogPlugin;
 use bevy_mod_clipboard::ClipboardPlugin;
+use birdgen::{BirdGenInputs, RecentBirds, generate_bird_body_mesh, generate_bird_head_mesh};
 use rand::{Rng, seq::IndexedRandom};
 
-mod bird;
 mod log_text;
 mod open_link;
 mod random_words;
