@@ -1,5 +1,5 @@
 use bevy::{ecs::resource::Resource, mesh::Mesh};
-use csgrs::{mesh::plane::Plane, traits::CSG};
+use csgrs::{csg::CSG, mesh::plane::Plane};
 use rand::seq::IndexedRandom;
 type CSGMesh = csgrs::mesh::Mesh<()>;
 

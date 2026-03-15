@@ -15,7 +15,7 @@ opt-level = 3
 members = ["birdgen"]
 
 [workspace.dependencies]
-bevy = { version = "0.17.3" }
+bevy = { version = "0.18" }
 rand = "0.9.2"
 
 [dependencies]
@@ -26,7 +26,7 @@ log = { version = "*", features = [
 accesskit = "0.21.1"
 birdgen = { path = "./birdgen" }
 bevy = { workspace = true, features = ["experimental_bevy_ui_widgets"] }
-bevy_file_dialog = "0.9.0"
+bevy_file_dialog = { git="https://github.com/richardhozak/bevy_file_dialog.git" }
 rand = { workspace = true }
 
 # not-wasm deps
