@@ -1113,19 +1113,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7ef8e4b7e61dfe7719bb03c884dc270cd46a82efb40f93e9933b990c5c190c59"
 
 [[package]]
-name = "bevy_mod_clipboard"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "375b01acc0e21d6b0f4525dd04b7e74a69c07ad8f3438380a1f61cd863a6d852"
-dependencies = [
- "arboard",
- "bevy",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
-]
-
-[[package]]
 name = "bevy_pbr"
 version = "0.17.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2021,13 +2008,15 @@ name = "cool-birds"
 version = "0.2.4"
 dependencies = [
  "accesskit",
+ "arboard",
  "bevy",
  "bevy_file_dialog",
- "bevy_mod_clipboard",
  "birdgen",
  "log",
  "open",
  "rand",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
  "web-sys",
 ]
 

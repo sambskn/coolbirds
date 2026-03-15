@@ -26,7 +26,6 @@ log = { version = "*", features = [
 accesskit = "0.21.1"
 birdgen = { path = "./birdgen" }
 bevy = { workspace = true, features = ["experimental_bevy_ui_widgets"] }
-bevy_mod_clipboard = "0.1.2"
 bevy_file_dialog = "0.9.0"
 rand = { workspace = true }
 
@@ -35,9 +34,15 @@ rand = { workspace = true }
 # open (for opening links in the user's browser) only works on native
 open = "5"
 
+# for windows clipboard
+[target.'cfg(any(target_os = "windows", target_family = "unix"))'.dependencies]
+arboard = { version = "3.6.1", default-features = false }
+
 # wasm only deps
 [target.'cfg(target_family = "wasm")'.dependencies]
-web-sys = { version = "0.3", features = ["Window"] } # used to open links
+wasm-bindgen = { version = "0.2" }
+web-sys = { version = "0.3", features = ["Window", "Navigator", "Clipboard"] } # used to open links/Clipboard
+wasm-bindgen-futures = "0.4"
 
 [profile.release]
 # make small (z better than s)

@@ -1,3 +1,4 @@
+use crate::clipboard::{Clipboard, ClipboardRead};
 use crate::{
     BG_COLOR, BirdSTLContents, BirdState, RebuildBird, log_text::NewLog, open_link,
     random_words::get_bird_description,
@@ -9,7 +10,6 @@ use bevy::{
     ui_widgets::{Activate, Button, UiWidgetsPlugins, observe},
 };
 use bevy_file_dialog::FileDialogExt;
-use bevy_mod_clipboard::{Clipboard, ClipboardRead};
 use birdgen::{BirdGenInputs, RecentBirds};
 
 const NORMAL_BUTTON: Color = Color::srgba(0., 0., 0., 0.00);
