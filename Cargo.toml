@@ -43,6 +43,8 @@ arboard = { version = "3.6.1", default-features = false }
 wasm-bindgen = { version = "0.2" }
 web-sys = { version = "0.3", features = ["Window", "Navigator", "Clipboard"] } # used to open links/Clipboard
 wasm-bindgen-futures = "0.4"
+[target.'cfg(all(target_family = "wasm", any(target_os = "unknown", target_os = "none")))'.dependencies]
+getrandom = { version = "^0.3", features = ["wasm_js"] }
 
 [profile.release]
 # make small (z better than s)
