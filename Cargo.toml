@@ -12,7 +12,7 @@ opt-level = 1
 opt-level = 3
 
 [workspace]
-members = ["birdgen"]
+members = ["birdgen", "server"]
 
 [workspace.dependencies]
 bevy = { version = "0.18" }

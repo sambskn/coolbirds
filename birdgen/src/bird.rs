@@ -488,6 +488,16 @@ impl BirdGenInputs {
             Ok(result.as_bytes().to_vec())
         }
     }
+
+    pub fn get_gltf(&self) -> Result<String, std::io::Error> {
+        // rotate STL's - idk man but when I uploaded to shapeways it thought the bird was on it's side, switching that up here
+        // let head_csg_mesh = generate_bird_head_csg_mesh(self).rotate(-90., 0., 0.);
+        let body_csg_mesh = generate_bird_body_csg_mesh(self).rotate(-90., 0., 0.);
+        let body_gltf_str = body_csg_mesh.to_gltf("bird-body");
+        // let head_stl_str = head_csg_mesh.to_stl_ascii("head");
+        Ok(body_gltf_str)
+    }
+
     pub fn get_a_good_bird() -> Self {
         let mut rng = rand::rng();
         // select one of our strings of good birds

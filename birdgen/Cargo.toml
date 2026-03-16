@@ -8,7 +8,7 @@ edition = "2024"
 bevy = { workspace = true }
 csgrs = { git = "https://github.com/sambskn/csgrs.git", branch = "bump-bevy", default-features = false, features = [
   # trimmed default deps
-  "f64", "bmesh", "mesh", "sketch", "stl-io", "chull-io", "sdf", "offset", "delaunay",
+  "f64", "bmesh", "mesh", "sketch", "stl-io", "gltf-io",  "chull-io", "sdf", "offset", "delaunay",
   # bevy support
   "bevymesh"
 ] }
