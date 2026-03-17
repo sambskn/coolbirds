@@ -1,3 +1,4 @@
+#[cfg(feature = "bevy")]
 use bevy::{ecs::resource::Resource, mesh::Mesh};
 use csgrs::{csg::CSG, mesh::plane::Plane};
 use rand::seq::IndexedRandom;
@@ -28,8 +29,9 @@ const GOOD_BIRDS: &'static [&'static str] = &[
 ];
 
 // Inputs/descriptions copied from original Bird-o-matic .SCAD script (see referenced script at bottom of file)
-// [Ed. note: Made em all f32's for now]
-#[derive(Resource, Clone, Copy)]
+// (Made em all f32's for now)
+#[cfg_attr(feature = "bevy", derive(Resource, Clone, Copy))]
+#[cfg_attr(not(feature = "bevy"), derive(Clone, Copy))]
 pub struct BirdGenInputs {
     // Length of the beak
     pub beak_length: f32, // [0:50]
@@ -81,8 +83,8 @@ pub struct BirdGenInputs {
     // How to cut the base of the object (-1 to disable, then use your own slicer options)
     pub base_flat: f32, // [-100:100]
 }
-
-#[derive(Resource, Clone, Copy)]
+#[cfg_attr(feature = "bevy", derive(Resource, Clone, Copy))]
+#[cfg_attr(not(feature = "bevy"), derive(Clone, Copy))]
 pub struct RecentBirds {
     pub left: BirdGenInputs,
     pub right: BirdGenInputs,
@@ -618,6 +620,7 @@ fn generate_bird_head_csg_mesh(input: &BirdGenInputs) -> CSGMesh {
     head_in_place
 }
 
+#[cfg(feature = "bevy")]
 pub fn generate_bird_head_mesh(input: &BirdGenInputs) -> Mesh {
     let head_in_place = generate_bird_head_csg_mesh(input);
     // add the x axis rotation to account for y up world we're rocking with in bevy
@@ -706,6 +709,7 @@ pub fn generate_bird_body_csg_mesh(input: &BirdGenInputs) -> CSGMesh {
     body
 }
 
+#[cfg(feature = "bevy")]
 pub fn generate_bird_body_mesh(input: &BirdGenInputs) -> Mesh {
     let body = generate_bird_body_csg_mesh(input);
     // add the x axis rotation to account for y up world we're rocking with in bevy

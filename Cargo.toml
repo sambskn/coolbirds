@@ -24,7 +24,7 @@ log = { version = "*", features = [
     "release_max_level_warn",
 ] }
 accesskit = "0.21.1"
-birdgen = { path = "./birdgen" }
+birdgen = { path = "./birdgen", features=["bevy"] }
 bevy = { workspace = true, features = ["experimental_bevy_ui_widgets"] }
 bevy_file_dialog = { git="https://github.com/richardhozak/bevy_file_dialog.git" }
 rand = { workspace = true }
