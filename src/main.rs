@@ -1,3 +1,4 @@
+use crate::birdfetch::BirdFetchPlugin;
 use crate::clipboard::ClipboardPlugin;
 use crate::{
     log_text::{LogTextPlugin, NewLog},
@@ -19,6 +20,7 @@ use bevy_file_dialog::FileDialogPlugin;
 use birdgen::{BirdGenInputs, RecentBirds, generate_bird_body_mesh, generate_bird_head_mesh};
 use rand::{Rng, seq::IndexedRandom};
 
+mod birdfetch;
 mod clipboard;
 mod log_text;
 mod open_link;
@@ -40,6 +42,7 @@ pub struct BirdSTLContents;
 
 fn main() {
     App::new()
+        .add_plugins(BirdFetchPlugin)
         .add_plugins((
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Window {

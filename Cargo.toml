@@ -28,6 +28,7 @@ birdgen = { path = "./birdgen", features=["bevy"] }
 bevy = { workspace = true, features = ["experimental_bevy_ui_widgets"] }
 bevy_file_dialog = { git="https://github.com/richardhozak/bevy_file_dialog.git" }
 rand = { workspace = true }
+reqwest = { version = "0.13.2", features = ["blocking"] }
 
 # not-wasm deps
 [target.'cfg(not(target_family = "wasm"))'.dependencies]
