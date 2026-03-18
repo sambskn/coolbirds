@@ -1,4 +1,4 @@
-use crate::birdfetch::BirdFetchPlugin;
+use crate::birdfetch::{BirdFetchEvent, BirdFetchPlugin};
 use crate::clipboard::ClipboardPlugin;
 use crate::{
     log_text::{LogTextPlugin, NewLog},
@@ -172,6 +172,8 @@ fn spawn_bird_mesh(
     });
 
     let current_bird_inputs = bird_inputs.into_inner();
+    // send bird fetch test
+    commands.trigger(BirdFetchEvent(current_bird_inputs.clone()));
     // create mesh of current bird for display
     let seed_head_mesh = generate_bird_head_mesh(&current_bird_inputs);
     let seed_body_mesh = generate_bird_body_mesh(&current_bird_inputs);

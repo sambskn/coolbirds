@@ -6,6 +6,7 @@ mod birdcache;
 #[tokio::main]
 async fn main() {
     let bird = warp::path!("bird" / String).then(async |bird_seed: String| {
+        println!("bird req: {}", bird_seed);
         // Check if bird exists in cache
         let cache_check = birdcache::get_bird_from_cache(bird_seed.as_str()).await;
         match cache_check {

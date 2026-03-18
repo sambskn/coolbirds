@@ -1,12 +1,9 @@
 use bevy::asset::io::AssetSourceBuilder;
-use bevy::prelude::*;
-use bevy::{
-    asset::io::{
-        AssetSource, AssetSourceId,
-        memory::{Dir, MemoryAssetReader},
-    },
-    prelude::*,
+use bevy::asset::io::{
+    AssetSourceId,
+    memory::{Dir, MemoryAssetReader},
 };
+use bevy::prelude::*;
 use birdgen::BirdGenInputs;
 use std::path::Path;
 
@@ -56,13 +53,14 @@ fn on_bird_fetch(
 }
 
 #[derive(Event)]
-pub struct BirdFetchEvent(BirdGenInputs);
+pub struct BirdFetchEvent(pub BirdGenInputs);
 
 const BASE_BIRD_API_PATH: &str = "http://localhost:3030/";
 
 pub fn fetch_bird_gltf(bird_seed: &str) -> Result<String, String> {
-    let bird_json_req =
-        reqwest::blocking::get(format!("{}/bird/{}", BASE_BIRD_API_PATH, bird_seed));
+    let path = format!("{}bird/{}", BASE_BIRD_API_PATH, bird_seed);
+    info!("fetching a bird yo: {}", path);
+    let bird_json_req = reqwest::blocking::get(path);
     match bird_json_req {
         Ok(res) => Ok(res.text().unwrap()),
         Err(err) => {
